@@ -12,7 +12,14 @@ import {
   Input,
   Container,
   Row,
-  Col
+  Col,
+  Table,
+  Media,
+  Badge,
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
 } from "reactstrap";
 // core components
 import UserHeader from "components/Headers/UserHeader.js";
@@ -20,6 +27,24 @@ import UserHeader from "components/Headers/UserHeader.js";
 function ClientProfile(){
 
   const [editable, setEditable] = useState(false);
+
+  const [clients, setClients] = useState([
+    { 
+      id: 1,
+      name: 'zé delivery',
+      date: '09/08/2020',
+      value: 200.15,
+      active: true
+    },
+    { 
+      id:2,
+      name: 'Ifood',
+      date: '07/08/2020',
+      value: 500.90,
+      active: false
+    }
+  ]);
+
 
   const handleEditProfile = useCallback((e) => {
     e.preventDefault()
@@ -219,17 +244,186 @@ function ClientProfile(){
                   <hr className="my-4" />
                   <h6 className="heading-small text-muted mb-4">Plano</h6>
                   <div className="pl-lg-4">
+
+                  <FormGroup>
+                      <label>Status da Conta</label>
+                        <Input type="select" name="select" id="exampleSelect">
+                          <option>Ativado</option>
+                          <option>Desativado</option>
+                        </Input>
+                    </FormGroup>
+
+
                     <FormGroup>
                       <label>Plano selecionado</label>
                         <Input type="select" name="select" id="exampleSelect">
-                          <option>Básico</option>
-                          <option>Intermediário</option>
-                          <option>Avançado</option>
+                          <option>Monetiz Checkout</option>
+                          <option>Monetiz Pay</option>
                         </Input>
                     </FormGroup>
                   </div>
                 </Form>
               </CardBody>
+
+              <CardBody>
+                Vendas
+                
+                <Table className="align-items-center table-flush" responsive>
+                <thead className="thead-light">
+                  <tr>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Data</th>
+                    <th scope="col">Valor</th>
+                    <th scope="col">Status</th>
+                    {/* <th scope="col">Users</th> */}
+                    <th scope="col" />
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                    {clients.map(client => (
+                      <tr key={client.id}>
+                      <th scope="row">
+
+
+                      <td>
+                      <span className="mb-0 text-sm">
+                              {client.name}
+                            </span>
+                      </td>
+     
+                      </th>
+                      <td>{client.date}</td>
+                      <td>
+                        {client.value}
+                      </td>
+
+                      <td>
+                        <Badge color="" className="badge-dot mr-4">
+                          <i className={client.active ? "bg-success" : "bg-warning"} />
+                          {client.active ? "Pago": 'Inadimplente'}
+                        </Badge>
+                      </td>
+  
+                      <td className="text-right">
+                        <UncontrolledDropdown>
+                          <DropdownToggle
+                            className="btn-icon-only text-light"
+                            href="#pablo"
+                            role="button"
+                            size="sm"
+                            color=""
+                            onClick={e => e.preventDefault()}
+                          >
+                            <i className="fas fa-ellipsis-v" />
+                          </DropdownToggle>
+                          <DropdownMenu className="dropdown-menu-arrow" right>
+                            <DropdownItem
+                              onClick={(e) => e.preventDefault()}
+                            >
+                              Ver perfil
+                            </DropdownItem>
+                            <DropdownItem
+                              href="#pablo"
+                              onClick={e => e.preventDefault()}
+                            >
+                              Another action
+                            </DropdownItem>
+                            <DropdownItem
+                              href="#pablo"
+                              onClick={e => e.preventDefault()}
+                            >
+                              Something else here
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </UncontrolledDropdown>
+                      </td>
+                    </tr>
+                    ))}
+                </tbody>
+                </Table> 
+              </CardBody>
+
+              <CardBody>
+                Chargebacks
+                
+                <Table className="align-items-center table-flush" responsive>
+                <thead className="thead-light">
+                  <tr>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Data</th>
+                    <th scope="col">Valor</th>
+                    <th scope="col">Status</th>
+                    {/* <th scope="col">Users</th> */}
+                    <th scope="col" />
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                    {clients.map(client => (
+                      <tr key={client.id}>
+                      <th scope="row">
+
+
+                      <td>
+                      <span className="mb-0 text-sm">
+                              {client.name}
+                            </span>
+                      </td>
+     
+                      </th>
+                      <td>{client.date}</td>
+                      <td>
+                        {client.value}
+                      </td>
+
+                      <td>
+                        <Badge color="" className="badge-dot mr-4">
+                          <i className={client.active ? "bg-success" : "bg-warning"} />
+                          {client.active ? "Pago": 'Inadimplente'}
+                        </Badge>
+                      </td>
+  
+                      <td className="text-right">
+                        <UncontrolledDropdown>
+                          <DropdownToggle
+                            className="btn-icon-only text-light"
+                            href="#pablo"
+                            role="button"
+                            size="sm"
+                            color=""
+                            onClick={e => e.preventDefault()}
+                          >
+                            <i className="fas fa-ellipsis-v" />
+                          </DropdownToggle>
+                          <DropdownMenu className="dropdown-menu-arrow" right>
+                            <DropdownItem
+                              onClick={(e) => e.preventDefault()}
+                            >
+                              Ver perfil
+                            </DropdownItem>
+                            <DropdownItem
+                              href="#pablo"
+                              onClick={e => e.preventDefault()}
+                            >
+                              Another action
+                            </DropdownItem>
+                            <DropdownItem
+                              href="#pablo"
+                              onClick={e => e.preventDefault()}
+                            >
+                              Something else here
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </UncontrolledDropdown>
+                      </td>
+                    </tr>
+                    ))}
+                </tbody>
+                </Table> 
+              </CardBody>
+
+
             </Card>
           </Col>
         </Row>

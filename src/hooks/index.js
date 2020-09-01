@@ -1,10 +1,13 @@
 import React from 'react';
 
 import { AuthProvider } from './auth';
+import { PlansProvider } from './plans';
 
 const AppProvider = ({ children }) => (
   <AuthProvider>
-    { children }
+    <PlansProvider>
+      { children }
+    </PlansProvider>
   </AuthProvider>
 );
 

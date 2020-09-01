@@ -25,9 +25,9 @@ import {
 
 import Header from "components/Headers/Header.js";
 
-import api from '../services/api';
+import api from '../../services/api';
 
-function Clients(){
+function ClientsChargeback(){
 
   const history = useHistory();
 
@@ -35,15 +35,15 @@ function Clients(){
     { 
       id: 1,
       name: 'zé delivery',
-      plan: 'Básico',
-      paymentStatus: 'ok',
+      date: '09/08/2020',
+      value: 200.15,
       active: true
     },
     { 
       id:2,
       name: 'Ifood',
-      plan: 'Avançado',
-      paymentStatus: 'inadimplente',
+      date: '07/08/2020',
+      value: 500.90,
       active: false
     }
   ]);
@@ -76,15 +76,15 @@ function Clients(){
           <div className="col">
             <Card className="shadow">
               <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
-                <h3 className="mb-0">Clientes</h3>
-                <Button color='primary' onClick={handleNewClient}>Cadastrar</Button>
+                <h3 className="mb-0">Chargebacks</h3>
+                {/* <Button color='primary' onClick={handleNewClient}>Cadastrar</Button> */}
               </CardHeader>
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
                     <th scope="col">Empresa</th>
-                    <th scope="col">Plano</th>
-                    <th scope="col">Pagamento</th>
+                    <th scope="col">Data</th>
+                    <th scope="col">Valor</th>
                     <th scope="col">Status</th>
                     {/* <th scope="col">Users</th> */}
                     <th scope="col" />
@@ -113,18 +113,15 @@ function Clients(){
                           </Media>
                         </Media>
                       </th>
-                      <td>{client.plan}</td>
+                      <td>{client.date}</td>
                       <td>
-                        <Badge color="" className="badge-dot mr-4">
-                          <i className={client.paymentStatus === 'ok' ? "bg-success" : "bg-warning"} />
-                          {client.paymentStatus}
-                        </Badge>
+                        {client.value}
                       </td>
 
                       <td>
                         <Badge color="" className="badge-dot mr-4">
                           <i className={client.active ? "bg-success" : "bg-warning"} />
-                          {client.active ? "Ativo": 'Inativo'}
+                          {client.active ? "Pago": 'Inadimplente'}
                         </Badge>
                       </td>
   
@@ -229,4 +226,4 @@ function Clients(){
 }
 
 
-export default Clients;
+export default ClientsChargeback;

@@ -1,5 +1,5 @@
-import React, { useState, useEffect} from "react";
-
+import React, { useState, useEffect, useCallback} from "react";
+import { useHistory } from 'react-router-dom';
 // reactstrap components
 import {
   Badge,
@@ -18,42 +18,60 @@ import {
   Table,
   Container,
   Row,
+  Button,
   UncontrolledTooltip
 } from "reactstrap";
 // core components
 
+import { usePlans } from '../../hooks/plans'
+
 import Header from "components/Headers/Header.js";
 
-import api from '../services/api';
+import api from '../../services/api';
 
-import { formatPrice } from '../utils/format'
+import { formatPrice } from '../../utils/format'
 
 function Plans(){
 
+
+  const history = useHistory();
+  const  { getPlans } = usePlans();
+
   const [plans, setPlans] = useState([
     {
-      name: 'Básico',
+      name: 'Monetiz Checkout',
       price: 30.99,
       members: 20,
       active: true,
     },
     {
-      name: 'Avançado',
+      name: 'Monetiz Pay',
       price: 70.99,
       members: 25,
-      active: true
+      active: true,
     },
   ]);
 
   useEffect(() => {
     async function loadingPlans(){
-      const response = await api.get('/plans');
+      const response = await getPlans()
+      setPlans(response);
 
-      setPlans(response.data);
+      console.log(response)
     }
 
     loadingPlans();
-  },[])
+
+    
+  },[getPlans])
+
+  const handlePlanRegister = useCallback(() => {
+    history.push('/admin/plan-register')
+  },[history])
+
+  const handlePlanSettings = useCallback(()=>{
+    history.push('/admin/plan-settings')
+  },[history])
 
   return (
     <>
@@ -64,14 +82,15 @@ function Plans(){
         <Row>
           <div className="col">
             <Card className="shadow">
-              <CardHeader className="border-0">
-                <h3 className="mb-0">Clientes</h3>
+              <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
+                <h3 className="mb-0">Planos</h3>
+                <Button color='primary' onClick={handlePlanRegister}>Cadastrar</Button>
               </CardHeader>
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
                     <th scope="col">Nome</th>
-                    <th scope="col">Preço</th>
+                    {/* <th scope="col">Preço</th> */}
                     <th scope="col">Número de Membros</th>
                     <th scope="col">Status</th>
                     {/* <th scope="col">Users</th> */}
@@ -79,7 +98,7 @@ function Plans(){
                   </tr>
                 </thead>
                 <tbody>
-                  
+{/*                   
                     {plans.map(plan => (
                       <tr>
                       <th scope="row">
@@ -101,7 +120,7 @@ function Plans(){
                           </Media>
                         </Media>
                       </th>
-                      <td>{formatPrice(plan.price)}</td>
+                     
                       <td>
                         <span className="mb-0 text-sm">
                           {plan.members}
@@ -130,9 +149,9 @@ function Plans(){
                           <DropdownMenu className="dropdown-menu-arrow" right>
                             <DropdownItem
                               href="#pablo"
-                              onClick={e => e.preventDefault()}
+                              onClick={handlePlanSettings}
                             >
-                              Action
+                              Configuração
                             </DropdownItem>
                             <DropdownItem
                               href="#pablo"
@@ -151,7 +170,7 @@ function Plans(){
                       </td>
                     </tr>
   
-                    ))}
+                    ))} */}
 
                 </tbody>
               </Table>
