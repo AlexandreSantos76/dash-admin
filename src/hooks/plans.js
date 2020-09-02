@@ -7,6 +7,7 @@ const PlansContext = createContext();
 function PlansProvider({ children }) {
 
   const [plans, setPlans] = useState([]);
+  const [planSettingsId, setPlanSettingsId] = useState(null);
 
   const getPlans = useCallback(async () => {
     
@@ -29,8 +30,17 @@ function PlansProvider({ children }) {
     }
   },[])
 
+
+  const handleSetPlanDetailsId = useCallback((id) => {
+    setPlanSettingsId(id);
+  },[])
+
+  const handleGetPlanDetailsId = useCallback(() => {
+    return planSettingsId;
+  },[planSettingsId])
+
   return (
-    <PlansContext.Provider value={{plans, getPlans, savePlans}}>
+    <PlansContext.Provider value={{plans, getPlans, savePlans, handleSetPlanDetailsId, handleGetPlanDetailsId}}>
       {children}
     </PlansContext.Provider>
   )

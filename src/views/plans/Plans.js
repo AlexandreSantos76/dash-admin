@@ -35,22 +35,9 @@ function Plans(){
 
 
   const history = useHistory();
-  const  { getPlans } = usePlans();
+  const  { getPlans, handleSetPlanDetailsId } = usePlans();
 
-  const [plans, setPlans] = useState([
-    {
-      name: 'Monetiz Checkout',
-      price: 30.99,
-      members: 20,
-      active: true,
-    },
-    {
-      name: 'Monetiz Pay',
-      price: 70.99,
-      members: 25,
-      active: true,
-    },
-  ]);
+  const [plans, setPlans] = useState([]);
 
   useEffect(() => {
     async function loadingPlans(){
@@ -69,9 +56,12 @@ function Plans(){
     history.push('/admin/plan-register')
   },[history])
 
-  const handlePlanSettings = useCallback(()=>{
+  const handlePlanSettings = useCallback((plan)=> {
+    console.log("ID", plan)
+    handleSetPlanDetailsId(plan.id);
+
     history.push('/admin/plan-settings')
-  },[history])
+  },[handleSetPlanDetailsId, history])
 
   return (
     <>
@@ -98,8 +88,8 @@ function Plans(){
                   </tr>
                 </thead>
                 <tbody>
-{/*                   
-                    {plans.map(plan => (
+                  
+                    {plans.map(( plan) => (
                       <tr>
                       <th scope="row">
                         <Media className="align-items-center">
@@ -123,14 +113,14 @@ function Plans(){
                      
                       <td>
                         <span className="mb-0 text-sm">
-                          {plan.members}
+                          0
                         </span>
                       </td>
 
                       <td>
                         <Badge color="" className="badge-dot mr-4">
                           <i className={plan.active ? "bg-success" : "bg-warning"} />
-                          {plan.active ? "Ativo": 'Inativo'}
+                          {plan.status ? "Ativo": 'Inativo'}
                         </Badge>
                       </td>
   
@@ -149,7 +139,7 @@ function Plans(){
                           <DropdownMenu className="dropdown-menu-arrow" right>
                             <DropdownItem
                               href="#pablo"
-                              onClick={handlePlanSettings}
+                              onClick={() => handlePlanSettings(plan)}
                             >
                               Configuração
                             </DropdownItem>
@@ -170,7 +160,7 @@ function Plans(){
                       </td>
                     </tr>
   
-                    ))} */}
+                    ))} 
 
                 </tbody>
               </Table>
