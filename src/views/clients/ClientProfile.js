@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 // reactstrap components
 import {
@@ -21,35 +21,42 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "reactstrap";
+
+import { useUsers } from '../../hooks/users';
 // core components
 import UserHeader from "components/Headers/UserHeader.js";
+import api from "services/api";
 
 function ClientProfile(){
 
+  const {getSelectedUserId} = useUsers();
+
   const [editable, setEditable] = useState(false);
 
-  const [clients, setClients] = useState([
-    { 
-      id: 1,
-      name: 'zé delivery',
-      date: '09/08/2020',
-      value: 200.15,
-      active: true
-    },
-    { 
-      id:2,
-      name: 'Ifood',
-      date: '07/08/2020',
-      value: 500.90,
-      active: false
-    }
-  ]);
+  const [client, setClient] = useState(null);
+  const [plans, setPlans] = useState([]);
+  const user_id = getSelectedUserId();
 
 
   const handleEditProfile = useCallback((e) => {
     e.preventDefault()
     setEditable(state => !state);
   },[]) 
+
+  useEffect(() => {
+    async function loadingData(){
+      console.log("CLIENTE PROFILE", user_id)
+      const response = await api.get(`/user/findOne/${user_id}`);
+      const responsePlans = await api.get('/plans/list');
+
+    
+      setClient(response.data);
+      setPlans(responsePlans.data);
+
+      console.log(responsePlans.data)
+    }
+    loadingData();
+  },[getSelectedUserId, user_id])
 
   return (
     <>
@@ -77,7 +84,8 @@ function ClientProfile(){
                 </Row>
               </CardHeader>
               <CardBody>
-                <Form>
+                {client && (
+                  <Form>
                   <h6 className="heading-small text-muted mb-4">
                     Informações
                   </h6>
@@ -93,9 +101,8 @@ function ClientProfile(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="lucky.jesse"
                             id="input-username"
-                            placeholder="Username"
+                            value={client.name}
                             type="text"
                             disabled={!editable}
                           />
@@ -112,7 +119,7 @@ function ClientProfile(){
                           <Input
                             className="form-control-alternative"
                             id="input-email"
-                            placeholder="jesse@example.com"
+                            value={client.email}
                             type="email"
                             disabled={!editable}
                           />
@@ -126,13 +133,12 @@ function ClientProfile(){
                             className="form-control-label"
                             htmlFor="input-first-name"
                           >
-                            Nome
+                            CPF
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="Lucky"
                             id="input-first-name"
-                            placeholder="First name"
+                            value={client.cpf}
                             type="text"
                             disabled={!editable}
                           />
@@ -144,13 +150,12 @@ function ClientProfile(){
                             className="form-control-label"
                             htmlFor="input-last-name"
                           >
-                            Sobrenome
+                            celular
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="Jesse"
                             id="input-last-name"
-                            placeholder="Last name"
+                            value={client.celular}
                             type="text"
                             disabled={!editable}
                           />
@@ -160,7 +165,7 @@ function ClientProfile(){
                   </div>
                   <hr className="my-4" />
                   {/* Address */}
-                  <h6 className="heading-small text-muted mb-4">
+                  {/* <h6 className="heading-small text-muted mb-4">
                     Endereço
                   </h6>
                   <div className="pl-lg-4">
@@ -175,9 +180,8 @@ function ClientProfile(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="Bld Mihail Kogalniceanu, nr. 8 Bl 1, Sc 1, Ap 09"
                             id="input-address"
-                            placeholder="Home Address"
+                            value={client.userAddress.address}
                             type="text"
                             disabled={!editable}
                           />
@@ -195,10 +199,9 @@ function ClientProfile(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="New York"
+                            value={client.userAddress.city}
                             id="input-city"
                             placeholder="City"
-                            type="text"
                             disabled={!editable}
                           />
                         </FormGroup>
@@ -213,9 +216,8 @@ function ClientProfile(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="United States"
                             id="input-country"
-                            placeholder="Country"
+                            value={client.userAddress.state}
                             type="text"
                             disabled={!editable}
                           />
@@ -232,14 +234,14 @@ function ClientProfile(){
                           <Input
                             className="form-control-alternative"
                             id="input-postal-code"
-                            placeholder="Postal code"
+                            value={client.userAddress.postcode}
                             type="number"
                             disabled={!editable}
                           />
                         </FormGroup>
                       </Col>
                     </Row>
-                  </div>
+                  </div> */}
 
                   <hr className="my-4" />
                   <h6 className="heading-small text-muted mb-4">Plano</h6>
@@ -263,6 +265,7 @@ function ClientProfile(){
                     </FormGroup>
                   </div>
                 </Form>
+                )}
               </CardBody>
 
               <CardBody>
@@ -281,7 +284,7 @@ function ClientProfile(){
                 </thead>
                 <tbody>
                   
-                    {clients.map(client => (
+                    {/* {clients.map(client => (
                       <tr key={client.id}>
                       <th scope="row">
 
@@ -339,7 +342,7 @@ function ClientProfile(){
                         </UncontrolledDropdown>
                       </td>
                     </tr>
-                    ))}
+                    ))} */}
                 </tbody>
                 </Table> 
               </CardBody>
@@ -360,7 +363,7 @@ function ClientProfile(){
                 </thead>
                 <tbody>
                   
-                    {clients.map(client => (
+                    {/* {clients.map(client => (
                       <tr key={client.id}>
                       <th scope="row">
 
@@ -418,7 +421,7 @@ function ClientProfile(){
                         </UncontrolledDropdown>
                       </td>
                     </tr>
-                    ))}
+                    ))} */}
                 </tbody>
                 </Table> 
               </CardBody>

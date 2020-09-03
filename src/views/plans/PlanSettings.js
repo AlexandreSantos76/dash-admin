@@ -41,7 +41,7 @@ import api from "services/api";
 
 function PlanSettings(){
 
-  const { savePlans, handleGetPlanDetailsId } = usePlans();
+  const { savePlans, handleGetPlanDetailsId, updatePlan, deletePlan } = usePlans();
 
 
   const history = useHistory();
@@ -267,6 +267,7 @@ function PlanSettings(){
     e.preventDefault();
     
     const data = {
+      id: plan_id,
       name: planName,
       status: statusPlan,
       monetiz_tax_status: taxMonetizStatus,
@@ -284,10 +285,13 @@ function PlanSettings(){
       credit_card_tax_monetiz: paymentCreditCardMonetizTaxValue,
     }
 
-    await savePlans(data);
+    await updatePlan(data);
 
-    console.log(data);
   };
+
+  const handleDelete = async(e) => {
+    await deletePlan(plan_id)
+  }
 
   return (
     <>
@@ -298,10 +302,11 @@ function PlanSettings(){
           <Col className="order-xl-1" xl="12">
             <Card className="bg-secondary shadow">
               <CardHeader className="bg-white border-0">
-                <Row className="align-items-center">
+                <Row className="align-items-center justify-content-between">
                   <Col xs="8">
-                    <h3 className="mb-0">Plano Monetiz Pay</h3>
+                      <h3 className="mb-0">{planName}</h3>
                   </Col>
+                  <Button color='danger' outline type='button' onClick={handleDelete}> Deletar</Button>
                 </Row>
               </CardHeader>
               <CardBody>
@@ -422,7 +427,7 @@ function PlanSettings(){
                               </label>
                               <InputGroup>
                                 <InputGroupAddon addonType="prepend">{paymentMonetizTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                <Input placeholder="Valor" min={0} max={100} type="text" step="1" onChange={(e) => setTaxMonetizValue(e.target.value)}/>
+                                <Input placeholder="Valor" value={taxMonetizValue} min={0} max={100} type="text" step="1" onChange={(e) => setTaxMonetizValue(e.target.value)}/>
                               </InputGroup>
                             </FormGroup>
                           </Col>
@@ -491,7 +496,7 @@ function PlanSettings(){
                               </label>
                               <InputGroup>
                                 <InputGroupAddon addonType="prepend">{paymentBoletoBuyerTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                <Input placeholder="Valor" min={0} max={100} type="text" step="1" onChange={(e) => setPaymentBoletoBuyerTaxValue(e.target.value)} />
+                                <Input placeholder="Valor" value={paymentBoletoBuyerTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentBoletoBuyerTaxValue(e.target.value)} />
                               </InputGroup>
                             </FormGroup>
                             </Col>
@@ -531,7 +536,7 @@ function PlanSettings(){
                                 </label>
                                 <InputGroup>
                                   <InputGroupAddon addonType="prepend">{paymentBoletoMonetizTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" min={0} max={100} type="text" step="1" onChange={(e) => setPaymentBoletoMonetizTaxValue(e.target.value)}/>
+                                  <Input placeholder="Valor" value={paymentBoletoMonetizTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentBoletoMonetizTaxValue(e.target.value)}/>
                                 </InputGroup>
                               </FormGroup>
                             </Col>
@@ -601,7 +606,7 @@ function PlanSettings(){
                                 </label>
                                 <InputGroup>
                                   <InputGroupAddon addonType="prepend">{paymentCreditCardBuyerTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" min={0} max={100} type="text" step="1" onChange={(e) => setPaymentCreditCardBuyerTaxValue(e.target.value)}/>
+                                  <Input placeholder="Valor" value={paymentCreditCardBuyerTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentCreditCardBuyerTaxValue(e.target.value)}/>
                                 </InputGroup>
                               </FormGroup>
                             </Col>
@@ -642,7 +647,7 @@ function PlanSettings(){
                                 </label>
                                 <InputGroup>
                                   <InputGroupAddon addonType="prepend">{paymentCreditCardMonetizTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" min={0} max={100} type="text" step="1" onChange={(e) => setPaymentCreditCardMonetizTaxValue(e.target.value)}/>
+                                  <Input placeholder="Valor" value={paymentCreditCardMonetizTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentCreditCardMonetizTaxValue(e.target.value)}/>
                                 </InputGroup>
                               </FormGroup>
                             </Col>
@@ -783,7 +788,7 @@ function PlanSettings(){
                                 </label>
                                 <InputGroup>
                                   <InputGroupAddon addonType="prepend">{paymentAnticipationBuyerTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" min={0} max={100} type="text" step="1" onChange={(e) => setPaymentAnticipationBuyerTaxValue(e.target.value)}/>
+                                  <Input placeholder="Valor" value={paymentAnticipationBuyerTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentAnticipationBuyerTaxValue(e.target.value)}/>
                                 </InputGroup>
                               </FormGroup>
                             </Col>
@@ -824,15 +829,12 @@ function PlanSettings(){
                                 </label>
                                 <InputGroup>
                                   <InputGroupAddon addonType="prepend">{paymentAnticipationMonetizTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" min={0} max={100} type="text" step="1" onChange={(e) => setPaymentAnticipationMonetizTaxValue(e.target.value)}/>
+                                  <Input placeholder="Valor" value={[paymentAnticipationMonetizTaxValue]} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentAnticipationMonetizTaxValue(e.target.value)}/>
                                 </InputGroup>
                               </FormGroup>
                             </Col>
                           </Row>
-
-                    
                     </Card>
-                    
                   </div>
                   <Col className='d-flex justify-content-center'>
                     <Button color="primary" className='self-align-center' type='submit' form='form'>

@@ -23,6 +23,8 @@ import {
 } from "reactstrap";
 // core components
 
+import { useUsers } from '../../hooks/users'
+
 import Header from "components/Headers/Header.js";
 
 import api from '../../services/api';
@@ -30,37 +32,27 @@ import api from '../../services/api';
 function Clients(){
 
   const history = useHistory();
+  const { saveSelectedUserId } = useUsers();
 
-  const [clients, setClients] = useState([
-    { 
-      id: 1,
-      name: 'zé delivery',
-      plan: 'Básico',
-      paymentStatus: 'ok',
-      active: true
-    },
-    { 
-      id:2,
-      name: 'Ifood',
-      plan: 'Avançado',
-      paymentStatus: 'inadimplente',
-      active: false
-    }
-  ]);
+  const [clients, setClients] = useState([]);
 
   useEffect(() => {
     async function loadingClients(){
-      const response = await api.get('/clients');
+      
+      const response = await api.get('/user');
 
       setClients(response.data);
+      console.log(response.data);
     }
 
     loadingClients();
   },[])
 
-  const handleProfile = useCallback(() => {
+  const handleProfile = useCallback((client) => {
+    console.log("CLIENT", client)
+    saveSelectedUserId(client.id);
     history.push('/admin/client-profile')
-  },[history])
+  },[history, saveSelectedUserId])
 
   const handleNewClient = useCallback(() => {
     history.push('/admin/client-register')
@@ -142,7 +134,7 @@ function Clients(){
                           </DropdownToggle>
                           <DropdownMenu className="dropdown-menu-arrow" right>
                             <DropdownItem
-                              onClick={handleProfile}
+                              onClick={() => handleProfile(client)}
                             >
                               Ver perfil
                             </DropdownItem>
