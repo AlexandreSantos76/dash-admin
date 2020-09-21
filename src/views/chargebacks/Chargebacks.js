@@ -22,40 +22,41 @@ import {
   UncontrolledTooltip
 } from "reactstrap";
 // core components
+import {format, parseISO} from 'date-fns'
 
-import { useUsers } from '../../hooks/users'
+import {formatPrice} from '../../utils/format'
+import { useChargebacks } from '../../hooks/chargebacks';
 
 import Header from "components/Headers/Header.js";
 
 import api from '../../services/api';
 
-function Clients(){
+
+function Chargebacks(){
 
   const history = useHistory();
-  const { saveSelectedUserId } = useUsers();
+  const { saveSelectedChargeback } = useChargebacks();
 
-  const [clients, setClients] = useState([]);
-
+  const [chargebacks, setChargebacks] = useState([]);
+  const [chargebacksOpen, setChargebacksOpen] = useState([]);
   useEffect(() => {
-    async function loadingClients(){
-      
-      const response = await api.get('/user');
+   
+    async function loadingData(){
+      const response = await api.get('/chargebacks/list');
+      const responseOpen = await api.get('/chargebacks/list-status-open');
 
-      setClients(response.data);
-      console.log(response.data);
+      setChargebacks(response.data);
+      setChargebacksOpen(responseOpen.data);
+
     }
 
-    loadingClients();
+    loadingData();
   },[])
 
-  const handleProfile = useCallback((client) => {
-    saveSelectedUserId(client.id);
-    history.push('/admin/client-profile')
-  },[history, saveSelectedUserId])
-
-  const handleNewClient = useCallback(() => {
-    history.push('/admin/client-register')
-  },[history])
+  const handleSettings = useCallback((chargeback) => {
+    saveSelectedChargeback(chargeback.id)
+    history.push('/admin/chargeback-settings')
+  },[history, saveSelectedChargeback])
 
   return (
     <>
@@ -67,57 +68,43 @@ function Clients(){
           <div className="col">
             <Card className="shadow">
               <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
-                <h3 className="mb-0">Clientes</h3>
-                <Button color='primary' onClick={handleNewClient}>Cadastrar</Button>
+                <h3 className="mb-0">Chargebacks</h3>
+                {/* <Button color='primary' onClick={handleNewClient}>Cadastrar</Button> */}
               </CardHeader>
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
-                    <th scope="col">Empresa</th>
-                    <th scope="col">Plano</th>
-                    <th scope="col">Pagamento</th>
-                    <th scope="col">Status</th>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Valor</th>
+                    <th scope="col">Data de requisição</th>
+                    <th scope="col">Data de limite</th>
+                    <th scope="col">Status pagamento</th>
                     {/* <th scope="col">Users</th> */}
                     <th scope="col" />
                   </tr>
                 </thead>
                 <tbody>
                   
-                    {clients.map(client => (
-                      <tr key={client.id}>
+                    {chargebacks.map(chargeback => (
+                      <tr key={chargeback.id}>
+                     
+                      <td>{chargeback.user.name}</td>
                       <th scope="row">
-                        <Media className="align-items-center">
-                          <a
-                            className="avatar rounded-circle mr-3"
-                            href="#pablo"
-                            onClick={e => e.preventDefault()}
-                          >
-                            <img
-                              alt="..."
-                              src={require("assets/img/theme/bootstrap.jpg")}
-                            />
-                          </a>
-                          <Media>
-                            <span className="mb-0 text-sm">
-                              {client.name}
-                            </span>
-                          </Media>
-                        </Media>
+                        <td>
+                        <span className="mb-0 text-sm">
+                                {formatPrice(chargeback.value)}
+                              </span>
+                        </td>
                       </th>
-                      <td>{client.plan ? client.plan.name: "Sem Plano"}</td>
+                      <td>{format(parseISO(chargeback.createdAt), 'dd/MM/yyyy')}</td>
+                      <td>{format(parseISO(chargeback.due_date), 'dd/MM/yyyy')}</td>
                       <td>
                         <Badge color="" className="badge-dot mr-4">
-                          <i className={client.paymentStatus === 'ok' ? "bg-success" : "bg-warning"} />
-                          {client.paymentStatus}
+                          <i className={chargeback.status ? "bg-success" : "bg-warning"} />
+                          {chargeback.status ? "Pago": "Aguardando"}
                         </Badge>
                       </td>
 
-                      <td>
-                        <Badge color="" className="badge-dot mr-4">
-                          <i className={client.status ? "bg-success" : "bg-warning"} />
-                          {client.status ? "Ativo": 'Desativado'}
-                        </Badge>
-                      </td>
   
                       <td className="text-right">
                         <UncontrolledDropdown>
@@ -133,7 +120,7 @@ function Clients(){
                           </DropdownToggle>
                           <DropdownMenu className="dropdown-menu-arrow" right>
                             <DropdownItem
-                              onClick={() => handleProfile(client)}
+                              onClick={() => handleSettings(chargeback)}
                             >
                               Ver perfil
                             </DropdownItem>
@@ -212,59 +199,51 @@ function Clients(){
               </CardFooter>
             </Card>
           </div>
+
+          
         </Row>
 
         <Row>
           <div className="col">
             <Card className="shadow">
               <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
-                <h3 className="mb-0">Ranking</h3>
+                <h3 className="mb-0">Chargebacks em Aberto</h3>
+                {/* <Button color='primary' onClick={handleNewClient}>Cadastrar</Button> */}
               </CardHeader>
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
-                    <th scope="col">Empresa</th>
-                    <th scope="col">Quantidade de Vendas</th>
-                    <th scope="col">Faturamento</th>
-                    <th scope="col">Status</th>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Valor</th>
+                    <th scope="col">Data de requisição</th>
+                    <th scope="col">Data de limite</th>
+                    <th scope="col">Status pagamento</th>
                     {/* <th scope="col">Users</th> */}
                     <th scope="col" />
                   </tr>
                 </thead>
                 <tbody>
                   
-                    {clients.map(client => (
-                      <tr key={client.id}>
+                    {chargebacksOpen.map(chargebackOpen => (
+                      <tr key={chargebackOpen.id}>
+                     
+                      <td>{chargebackOpen.user.name}</td>
                       <th scope="row">
-                        <Media className="align-items-center">
-                          <a
-                            className="avatar rounded-circle mr-3"
-                            href="#pablo"
-                            onClick={e => e.preventDefault()}
-                          >
-                            <img
-                              alt="..."
-                              src={require("assets/img/theme/bootstrap.jpg")}
-                            />
-                          </a>
-                          <Media>
-                            <span className="mb-0 text-sm">
-                              {client.name}
-                            </span>
-                          </Media>
-                        </Media>
+                        <td>
+                        <span className="mb-0 text-sm">
+                                {formatPrice(chargebackOpen.value)}
+                              </span>
+                        </td>
                       </th>
-                      <td>220</td>
-                      <td>
-                        R$ 3.000,00
-                      </td>
-
+                      <td>{format(parseISO(chargebackOpen.createdAt), 'dd/MM/yyyy')}</td>
+                      <td>{format(parseISO(chargebackOpen.due_date), 'dd/MM/yyyy')}</td>
                       <td>
                         <Badge color="" className="badge-dot mr-4">
-                          <i className={client.active ? "bg-success" : "bg-warning"} />
-                          {client.active ? "Ativo": 'Inativo'}
+                          <i className={chargebackOpen.status ? "bg-success" : "bg-warning"} />
+                          {chargebackOpen.status ? "Pago": "Aguardando"}
                         </Badge>
                       </td>
+
   
                       <td className="text-right">
                         <UncontrolledDropdown>
@@ -280,7 +259,7 @@ function Clients(){
                           </DropdownToggle>
                           <DropdownMenu className="dropdown-menu-arrow" right>
                             <DropdownItem
-                              onClick={handleProfile}
+                              onClick={handleSettings}
                             >
                               Ver perfil
                             </DropdownItem>
@@ -358,9 +337,9 @@ function Clients(){
                 </nav>
               </CardFooter>
             </Card>
-          </div>
+          </div>    
         </Row>
-
+      
 
       </Container>
     </>
@@ -368,4 +347,4 @@ function Clients(){
 }
 
 
-export default Clients;
+export default Chargebacks;

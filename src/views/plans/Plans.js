@@ -113,7 +113,7 @@ function Plans(){
                      
                       <td>
                         <span className="mb-0 text-sm">
-                          0
+                          {plan.users.length}
                         </span>
                       </td>
 

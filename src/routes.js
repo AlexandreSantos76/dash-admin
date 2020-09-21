@@ -29,8 +29,8 @@ import Plans from "views/plans/Plans";
 import PlanRegister from "views/plans/PlanRegister";
 import PlanSettings from "views/plans/PlanSettings";
 // import PlanMonetizPaySettings from "views/plans/PlanMonetizPaySettings";
-import ClientsChargeback from "views/clients/ClientsChargeback";
-
+import Chargebacks from "views/chargebacks/Chargebacks";
+import ChargebackSettings from "views/chargebacks/ChargebackSettings";
 
 var routes = [
   {
@@ -83,9 +83,16 @@ var routes = [
     path: "/clients-chargeback",
     name: "Chargebacks",
     icon: "ni ni-planet text-blue",
-    component: ClientsChargeback,
+    component: Chargebacks,
     layout: "/admin"
   },
+  {
+    path: "/chargeback-settings",
+    component:  ChargebackSettings,
+    layout: "/admin"
+  },
+
+ 
   // {
   //   path: "/icons",
   //   name: "Icons",

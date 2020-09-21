@@ -1,5 +1,6 @@
 import React, {useState, useContext, createContext, useCallback} from 'react'
 import { useHistory } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 import api from '../services/api';
 
@@ -10,16 +11,16 @@ function PlansProvider({ children }) {
   const history = useHistory();
 
   const [plans, setPlans] = useState([]);
-  const [planSettingsId, setPlanSettingsId] = useState(null);
+  const [planSettingsId, setPlanSettingsId] = useState(() => {
+    const selectedId = localStorage.getItem('@Monetiz-dashboard:plan-selected');
+
+    return selectedId;
+  });
 
   const getPlans = useCallback(async () => {
 
    
-    const response = await api.get('/plans/list', {
-      headers: {
-        'x-access-token': 'Barear eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJvdGF2aW9AdGVzdGUuY29tLmJyIiwibmFtZSI6Ik90YXZpbyBUZXN0ZSIsInNob3AiOjYsImF2YXRhciI6bnVsbCwiaWF0IjoxNTk5MTY3MDEyLCJleHAiOjE1OTkyNTM0MTJ9.OZHQ3lNLy1CVfXAOp5x4ehnEeoWCV3CamVd73vU4N3g'
-      }
-    });
+    const response = await api.get('/plans/list');
 
     setPlans(response.data);
     return response.data;
@@ -30,33 +31,41 @@ function PlansProvider({ children }) {
     try {
       const response = await api.post('/plans/add', data)
 
-      setPlans(state => [...state, response.data])
+      setPlans(state => [...state, response.data]);
+      toast.success("Plano cadastrado !");
+      history.push('/admin/plans');
     } catch (err){
       console.log(err);
+      toast.error("Tente novamente !");
     }
-  },[])
+  },[history])
 
   const updatePlan = useCallback(async(data) => {
     try {
       const response = await api.put(`/plans/update/${data.id}`, data);
+      toast.success("Plano atualizado !");
     } catch(err){
       console.log(err);
+      toast.error("Tente novamente !");
     }
   },[]);
 
   const deletePlan = useCallback(async(id) => {
     try {
       await api.delete(`/plans/delete/${id}`);
+      toast.success("Plano deletado !");
       history.push('/admin/plans/')
       
     } catch(err){
       console.log(err)
+      toast.error("Tente novamente !");
     }
   },[history])
 
 
   const handleSetPlanDetailsId = useCallback((id) => {
     setPlanSettingsId(id);
+    localStorage.setItem('@Monetiz-dashboard:plan-selected', id);
   },[])
 
   const handleGetPlanDetailsId = useCallback(() => {

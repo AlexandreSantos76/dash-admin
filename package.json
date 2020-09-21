@@ -47,6 +47,7 @@
     "axios": "^0.19.2",
     "chart.js": "2.9.3",
     "classnames": "2.2.6",
+    "date-fns": "^2.16.1",
     "moment": "2.24.0",
     "node-sass": "4.13.1",
     "nouislider": "14.1.1",
@@ -59,6 +60,7 @@
     "react-google-maps": "9.4.5",
     "react-router-dom": "5.1.2",
     "react-scripts": "^3.4.1",
+    "react-toastify": "^6.0.8",
     "reactstrap": "8.4.1"
   },
   "devDependencies": {
