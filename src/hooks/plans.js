@@ -18,8 +18,6 @@ function PlansProvider({ children }) {
   });
 
   const getPlans = useCallback(async () => {
-
-   
     const response = await api.get('/plans/list');
 
     setPlans(response.data);

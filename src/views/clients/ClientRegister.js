@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 // reactstrap components
 import {
@@ -15,9 +15,150 @@ import {
   Col
 } from "reactstrap";
 // core components
+
+import { usePlans } from '../../hooks/plans';
+import { useGetnet } from '../../hooks/getnet';
+
 import UserHeader from "components/Headers/UserHeader.js";
 
+
+
 function ClientRegister(){
+
+  const { getPlans } = usePlans();
+  const { cpfSituation, handlePreRegister } = useGetnet();
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [birthdate, setBirthdate] = useState('');
+  const [email, setEmail ] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [occupation, setOccupation ] = useState('');
+  const [motherName, setMotherName] = useState('');
+  const [motherSurname, setMotherSurname] = useState('')
+
+  const [businessStreet, setBusinessStreet] = useState('');
+  const [businessCity, setBusinessCity] = useState('');
+  const [businessState, setBusinessState] = useState('');
+  const [businessCEP, setBusinessCEP] = useState('');
+
+  const [street, setStreet] = useState('');
+  const [city, setCity]= useState('');
+  const [state, setState ] = useState('');
+  const [cep, setCep] = useState('');
+
+  const [plan, setPlan ] = useState('')
+  const [plans, setPlans] = useState([]);
+
+
+  const [bankAccounts, setBankAccounts] = useState([{
+    bank_code: '',
+    agency: '',
+    account: '',
+    account_type: ''
+  }]);
+
+  const [test, setTest] = useState(false)
+
+  useEffect(() => {
+    async function loadingPlan(){
+      const response = await getPlans();
+
+      setPlans(response);
+      console.log(response)
+    };
+
+    loadingPlan();
+
+  },[getPlans]);
+  
+  useEffect(() => {
+    async function verifyCpfValidate(){
+      if(cpf.length === 11){
+        await cpfSituation(cpf);
+      };
+    }
+    verifyCpfValidate()
+  },[cpf, cpfSituation])
+
+  const handleBankAccount = useCallback((index, field, value) => {
+    const stateUpdated = bankAccounts;
+    stateUpdated[index] = {
+      ...bankAccounts[index],
+      [field]: value,
+    }
+
+    setBankAccounts(stateUpdated)
+    console.log(stateUpdated)
+    setTest(state => !state)
+  },[bankAccounts])
+
+  const handleAddBankAccount = useCallback((e) => {
+    e.preventDefault();
+
+    const bankAccountsUpdated = [
+      ...bankAccounts,
+     {
+      bank_code: '',
+      agency: '',
+      account: '',
+      account_type: ''
+     }
+    ]
+
+    setBankAccounts(bankAccountsUpdated)
+
+    setTest(state => !state)
+  },[bankAccounts]);
+
+  const handleRemoveBankAccount = useCallback((e, index) => {
+
+    e.preventDefault();
+
+    if(bankAccounts.length - 1 < 1){
+      return
+    }
+
+    const bankAccountsUpdated = bankAccounts;
+
+    bankAccountsUpdated.splice(index, 1);
+
+    setBankAccounts(bankAccountsUpdated);
+    setTest(state => !state)
+
+
+  },[bankAccounts]);
+
+
+
+  const handleSubmit = useCallback(() => {
+    const data = {
+      cpf,
+      name,
+      surname,
+      birthdate,
+      motherName,
+      motherSurname,
+      businessAddress: {
+        street: businessStreet,
+        // number: businessNumber,
+        // neighborhood: businessNeighborhood,
+        city: businessCity,
+        state: businessState,
+        cep: businessCEP,
+      },
+      mailingAddress: {
+        street,
+        // number,
+        // neighborhood,
+        city,
+        state,
+        cep
+      },
+      email,
+      bankAccounts
+    }
+    handlePreRegister()
+  },[bankAccounts, birthdate, businessCEP, businessCity, businessState, businessStreet, cep, city, cpf, email, handlePreRegister, motherName, motherSurname, name, state, street, surname])
 
   return (
     <>
@@ -40,42 +181,7 @@ function ClientRegister(){
                     Informações
                   </h6>
                   <div className="pl-lg-4">
-                    <Row>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-username"
-                          >
-                            Usuário
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            defaultValue="lucky.jesse"
-                            id="input-username"
-                            placeholder="Username"
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-email"
-                          >
-                            E-mail
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            id="input-email"
-                            placeholder="jesse@example.com"
-                            type="email"
-                          />
-                        </FormGroup>
-                      </Col>
-                    </Row>
-                    <Row>
+                  <Row>
                       <Col lg="6">
                         <FormGroup>
                           <label
@@ -86,9 +192,9 @@ function ClientRegister(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="Lucky"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             id="input-first-name"
-                            placeholder="First name"
                             type="text"
                           />
                         </FormGroup>
@@ -103,19 +209,135 @@ function ClientRegister(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="Jesse"
+                            value={surname}
                             id="input-last-name"
-                            placeholder="Last name"
+                            onChange={e => setSurname(e.target.value)}
                             type="text"
                           />
                         </FormGroup>
                       </Col>
                     </Row>
+
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-username"
+                          >
+                            Data de nascimento
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            defaultValue="lucky.jesse"
+                            id="input-username"
+                            placeholder="Username"
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="6">
+                        <FormGroup>
+
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-email"
+                          >
+                            E-mail
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-email"
+                            placeholder="exemplo@monetiz.com.br"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            type="email"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-username"
+                          >
+                            CPF
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            value={cpf}
+                            id="input-cpf"
+                            onChange={e => setCpf(e.target.value)}
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="6">
+                        <FormGroup>
+
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-email"
+                          >
+                            Ocupação/Profissão
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-occupation"
+                            value={occupation}
+                            onChange={e => setOccupation(e.target.value)}                        
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-username"
+                          >
+                            Nome da mãe
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            value={motherName}
+                            onChange={e => setMotherName(e.target.value)}
+                            id="input-username"
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="6">
+                        <FormGroup>
+
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-email"
+                          >
+                            Sobrenome da mãe
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-email"
+                            value={motherSurname}
+                            onChange={e => setMotherSurname(e.target.value)}
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
                   </div>
                   <hr className="my-4" />
                   {/* Address */}
                   <h6 className="heading-small text-muted mb-4">
-                    Endereço
+                    Endereço Comercial
                   </h6>
                   <div className="pl-lg-4">
                     <Row>
@@ -129,9 +351,143 @@ function ClientRegister(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="Bld Mihail Kogalniceanu, nr. 8 Bl 1, Sc 1, Ap 09"
+                            value={businessStreet}
+                            onChange={e => setBusinessStreet(e.target.value)}
                             id="input-address"
-                            placeholder="Home Address"
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col lg="4">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-city"
+                          >
+                            Bairro
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            value={setBusinessCity}
+                            onChange={e => setBusinessCity(e.target.value)}
+                            id="input-city"
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-country"
+                          >
+                            Número
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            value={businessState}
+                            onChange={e => setBusinessState(e.target.value)}
+                            id="input-country"
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-country"
+                          >
+                            Complemento
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-postal-code"
+                            value={businessCEP}
+                            onChange={e => setBusinessCEP(e.target.value)}
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col lg="4">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-city"
+                          >
+                            Cidade
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            value={setBusinessCity}
+                            onChange={e => setBusinessCity(e.target.value)}
+                            id="input-city"
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-country"
+                          >
+                            Estado
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            value={businessState}
+                            onChange={e => setBusinessState(e.target.value)}
+                            id="input-country"
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-country"
+                          >
+                            CEP
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-postal-code"
+                            value={businessCEP}
+                            onChange={e => setBusinessCEP(e.target.value)}
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                  </div>
+
+                  <hr className="my-4" />
+                  {/* Address */}
+                  <h6 className="heading-small text-muted mb-4">
+                    Endereço de correspondência
+                  </h6>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col md="12">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-address"
+                          >
+                            Endereço
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            value={street}
+                            onChange={e => setState(e.target.value)}
+                            id="input-address"
                             type="text"
                           />
                         </FormGroup>
@@ -148,9 +504,9 @@ function ClientRegister(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="New York"
+                            value={city}
+                            onChange={e => setCity(e.target.value)}
                             id="input-city"
-                            placeholder="City"
                             type="text"
                           />
                         </FormGroup>
@@ -165,9 +521,9 @@ function ClientRegister(){
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="United States"
+                            value={state}
+                            onChange={e => setState(e.target.value)}
                             id="input-country"
-                            placeholder="Country"
                             type="text"
                           />
                         </FormGroup>
@@ -183,8 +539,9 @@ function ClientRegister(){
                           <Input
                             className="form-control-alternative"
                             id="input-postal-code"
-                            placeholder="Postal code"
-                            type="number"
+                            value={cep}
+                            onChange={e => setCep(e.target.value)}
+                            type="text"
                           />
                         </FormGroup>
                       </Col>
@@ -192,14 +549,119 @@ function ClientRegister(){
                   </div>
 
                   <hr className="my-4" />
+                  <h6 className="heading-small text-muted mb-4">Contas bancárias</h6>
+                  <div className="pl-lg-4">
+                    <FormGroup>
+                      <Row style={{display: 'flex', justifyContent: 'space-between'}}>
+                        <label>Contas bancárias</label>
+                        <Button 
+                          color='primary'
+                          onClick={(e) => handleAddBankAccount(e)} 
+                        >
+                            Adicionar outra conta
+                        </Button>
+                      </Row>
+                       {
+                         bankAccounts.map((ba, index) => (
+                           <div>
+                             <Row className='d-flex align-items-center'>
+                              <Col lg="2">
+                                <FormGroup>
+                                  <label
+                                    className="form-control-label"
+                                    htmlFor="input-city"
+                                  >
+                                    Código do banco
+                                  </label>
+                                  <Input
+                                    className="form-control-alternative"
+                                    id="input-city"
+                                    placeholder="City"
+                                    type="text"
+                                    value={ba.bank_code}
+                                    onChange={(e) => handleBankAccount(index, 'bank_code', e.target.value)}
+                                  />
+                                </FormGroup>
+                              </Col>
+                              <Col lg="3">
+                                <FormGroup>
+                                  <label
+                                    className="form-control-label"
+                                    htmlFor="input-country"
+                                  >
+                                    Agência
+                                  </label>
+                                  <Input
+                                    className="form-control-alternative"
+                                    id="input-country"
+                                    type="text"
+                                    value={ba.agency}
+                                    onChange={(e) => handleBankAccount(index, 'agency', e.target.value)}
+                                  />
+                                </FormGroup>
+                              </Col>
+                              <Col lg="2">
+                                <FormGroup>
+                                  <label
+                                    className="form-control-label"
+                                    htmlFor="input-country"
+                                  >
+                                    Número da conta
+                                  </label>
+                                  <Input
+                                    className="form-control-alternative"
+                                    id="input-postal-code"
+                                    value={ba.account}
+                                    onChange={(e) => handleBankAccount(index, 'account', e.target.value)}
+                                  />
+                                </FormGroup>
+                              </Col>
+                              <Col lg="3">
+                                <FormGroup>
+                                  <label
+                                    className="form-control-label"
+                                    htmlFor="input-country"
+                                  >
+                                    Tipo da conta
+                                  </label>
+                                  <Input
+                                    className="form-control-alternative"
+                                    id="input-postal-code"
+                                    value={ba.account_type}
+                                    onChange={(e) => handleBankAccount(index, 'account_type', e.target.value)}
+                                  />
+                                </FormGroup>
+                              
+                              </Col>
+                              <Col lg='2' style={{justifySelf:'flex-end'}}> 
+                                <Button 
+                                  color='danger' 
+                                  outline
+                                  onClick={(e) => handleRemoveBankAccount(e, index)}
+                                  >Excluir
+                                </Button>
+                              </Col>
+                            </Row>
+                           </div>
+                         ))
+                       }
+                    </FormGroup>
+                  </div>
+
+                  <hr className="my-4" />
                   <h6 className="heading-small text-muted mb-4">Plano</h6>
                   <div className="pl-lg-4">
                     <FormGroup>
                       <label>Plano selecionado</label>
-                        <Input type="select" name="select" id="exampleSelect">
-                          <option>Básico</option>
-                          <option>Intermediário</option>
-                          <option>Avançado</option>
+                        <Input 
+                          type="select" 
+                          name="select" 
+                          id="exampleSelect"
+                          onChange={e => setPlan(e.target.value)}
+                        >
+                         {plans.map(plan => (
+                           <option value={plan.id} key={plan.id}>{plan.name}</option>
+                         ))}
                         </Input>
                     </FormGroup>
                   </div>
