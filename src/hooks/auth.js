@@ -22,6 +22,8 @@ function AuthProvider({ children }) {
     }
 
   });
+
+  
   
   const signIn = useCallback(async({ email, password }) => {
     const response = await api.post('/sessions', { email, password });

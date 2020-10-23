@@ -9,6 +9,7 @@ export default function RouteWrapper({
   component: Component,
   ...rest
 }) {
+  console.log(rest);
 
   const auth = useAuth();
 
@@ -30,7 +31,6 @@ export default function RouteWrapper({
 RouteWrapper.propTypes = {
   isPrivate: Proptypes.bool,
   component: Proptypes.oneOfType([Proptypes.element, Proptypes.func])
-    .isRequired,
 };
 
 RouteWrapper.defaultProps = {

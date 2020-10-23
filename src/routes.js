@@ -16,12 +16,6 @@
 
 */
 import Index from "views/Index.js";
-import Profile from "views/examples/Profile.js";
-import Maps from "views/examples/Maps.js";
-import Register from "views/examples/Register.js";
-import Login from "views/examples/Login.js";
-import Tables from "views/examples/Tables.js";
-import Icons from "views/examples/Icons.js";
 import Clients from "views/clients/Clients";
 import ClientProfile from "views/clients/ClientProfile";
 import ClientRegister from "views/clients/ClientRegister";
@@ -31,6 +25,12 @@ import PlanSettings from "views/plans/PlanSettings";
 // import PlanMonetizPaySettings from "views/plans/PlanMonetizPaySettings";
 import Chargebacks from "views/chargebacks/Chargebacks";
 import ChargebackSettings from "views/chargebacks/ChargebackSettings";
+import Users from "views/users/Users";
+import GroupsCreate from "views/users/GroupsCreate"
+import GroupsUpdate from "views/users/GroupsUpdate";
+import UserCreate from "views/users/UserCreate";
+import Login from "views/users/Login"
+import Register from "views/users/Register"
 
 var routes = [
   {
@@ -65,6 +65,28 @@ var routes = [
     layout: "/admin"
   },
   {
+    path: "/users",
+    name: "Usuários",
+    icon: "fas fa-users text-primary text-red",
+    component: Users,
+    layout: "/admin"
+  },
+  {
+    path: "/user-create",
+    component: UserCreate,
+    layout: "/admin",
+  },
+  {
+    path: "/user-group",
+    component: GroupsCreate,
+    layout: "/admin",
+  },
+  {
+    path: "/user-group-update/:id",
+    component: GroupsUpdate,
+    layout: "/admin",
+  },
+  {
     path: "/plan-register",
     component: PlanRegister,
     layout: "/admin"
@@ -88,11 +110,21 @@ var routes = [
   },
   {
     path: "/chargeback-settings",
-    component:  ChargebackSettings,
+    component: ChargebackSettings,
     layout: "/admin"
   },
+  {
+    path: "/login",
+    component: Login,
+    layout: "/auth"
+  },
+  {
+    path: "/register",
+    component: Register,
+    layout: "/auth"
+  }
 
- 
+
   // {
   //   path: "/icons",
   //   name: "Icons",

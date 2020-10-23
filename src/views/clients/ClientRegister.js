@@ -2,18 +2,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 
 // reactstrap components
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  FormGroup,
-  Form,
-  Input,
-  Container,
-  Row,
-  Col
-} from "reactstrap";
+import { Button, Card, CardHeader, CardBody,FormGroup,Form, Input, Container, Row, Col} from "reactstrap";
 // core components
 
 import { usePlans } from '../../hooks/plans';
