@@ -22,6 +22,12 @@ function UsersProvider({ children }){
   },[selectedUserId])
 
 
+  const userRegister = useCallback(async (data) => {
+    const response = await api.post('/user/add', data);
+
+    return response.data;
+  })
+
   const updateUser = useCallback( async (data) => {
 
     try {
@@ -33,7 +39,7 @@ function UsersProvider({ children }){
   },[])
 
   return (
-    <UsersContext.Provider value={{saveSelectedUserId, getSelectedUserId, updateUser}}>
+    <UsersContext.Provider value={{saveSelectedUserId, getSelectedUserId, updateUser, userRegister}}>
       {children}
     </UsersContext.Provider>
   )
