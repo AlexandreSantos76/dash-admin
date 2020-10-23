@@ -18,6 +18,7 @@ import {
 
 import { usePlans } from '../../hooks/plans';
 import { useGetnet } from '../../hooks/getnet';
+import { useUsers } from '../../hooks/users';
 
 import UserHeader from "components/Headers/UserHeader.js";
 
@@ -26,7 +27,11 @@ import UserHeader from "components/Headers/UserHeader.js";
 function ClientRegister(){
 
   const { getPlans } = usePlans();
-  const { cpfSituation, handlePreRegister } = useGetnet();
+  const { cpfSituation, handlePreRegisterCpf, handlePreRegisterCnpj } = useGetnet();
+  const {  userRegister } = useUsers();
+
+  const [isCpf, setIsCpf] = useState(true);
+
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [birthdate, setBirthdate] = useState('');
@@ -49,6 +54,13 @@ function ClientRegister(){
   const [plan, setPlan ] = useState('')
   const [plans, setPlans] = useState([]);
 
+  const [cnpj, setCnpj] = useState('');
+  const [legalName, setLegalName ] = useState('');
+  const [tradeName, setTradeName ] = useState('');
+  const [stateFiscalNumber, setStateFiscalNumber ] = useState('');
+
+
+
 
   const [bankAccounts, setBankAccounts] = useState([{
     bank_code: '',
@@ -64,7 +76,6 @@ function ClientRegister(){
       const response = await getPlans();
 
       setPlans(response);
-      console.log(response)
     };
 
     loadingPlan();
@@ -130,35 +141,76 @@ function ClientRegister(){
 
 
 
-  const handleSubmit = useCallback(() => {
-    const data = {
-      cpf,
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    const client = await userRegister({
       name,
-      surname,
-      birthdate,
-      motherName,
-      motherSurname,
-      businessAddress: {
-        street: businessStreet,
-        // number: businessNumber,
-        // neighborhood: businessNeighborhood,
-        city: businessCity,
-        state: businessState,
-        cep: businessCEP,
-      },
-      mailingAddress: {
-        street,
-        // number,
-        // neighborhood,
-        city,
-        state,
-        cep
-      },
       email,
-      bankAccounts
+      password: 'senha123',
+      passwordConfirm: 'senha123',
+      cpf: `${isCpf ? cpf: cnpj}`,
+      plan_id: plan,
+    })
+    
+
+    if(isCpf){
+      handlePreRegisterCpf({  
+        cpf,
+        name,
+        surname,
+        birthdate,
+        motherName,
+        motherSurname,
+        businessAddress: {
+          street: businessStreet,
+          // number: businessNumber,
+          // neighborhood: businessNeighborhood,
+          city: businessCity,
+          state: businessState,
+          cep: businessCEP,
+        },
+        mailingAddress: {
+          street,
+          // number,
+          // neighborhood,
+          city,
+          state,
+          cep
+        },
+        email,
+        bankAccounts, 
+        user_id: client.id
+      })
+    } else {
+      handlePreRegisterCnpj({  
+        cnpj,
+        name,
+        surname,
+        tradeName,
+        legalName,
+        stateFiscalNumber,
+        businessAddress: {
+          street: businessStreet,
+          // number: businessNumber,
+          // neighborhood: businessNeighborhood,
+          city: businessCity,
+          state: businessState,
+          cep: businessCEP,
+        },
+        mailingAddress: {
+          street,
+          // number,
+          // neighborhood,
+          city,
+          state,
+          cep
+        },
+        email,
+        bankAccounts, 
+        user_id: client.id
+      });
     }
-    handlePreRegister()
-  },[bankAccounts, birthdate, businessCEP, businessCity, businessState, businessStreet, cep, city, cpf, email, handlePreRegister, motherName, motherSurname, name, state, street, surname])
+  },[bankAccounts, birthdate, businessCEP, businessCity, businessState, businessStreet, cep, city, cnpj, cpf, email, handlePreRegisterCnpj, handlePreRegisterCpf, isCpf, legalName, motherName, motherSurname, name, plan, state, stateFiscalNumber, street, surname, tradeName, userRegister])
 
   return (
     <>
@@ -176,6 +228,22 @@ function ClientRegister(){
                 </Row>
               </CardHeader>
               <CardBody>
+
+                <Row>
+                  <Col>
+                    <label>Tipo de conta</label>
+                    <Row>
+                    <div class="custom-control custom-radio mb-3">
+                        <input type="radio" id="typeCPF" name="accountType" class="custom-control-input" value={isCpf} onChange={() => setIsCpf(true)}/>
+                        <label class="custom-control-label" for="typeCPF">CPF</label>
+                      </div>
+                      <div class="custom-control custom-radio" style={{marginLeft: '15px'}}>
+                        <input type="radio" id="typeCNPJ" name="accountType" class="custom-control-input" value={!isCpf} onChange={() => setIsCpf(false)}/>
+                        <label class="custom-control-label" for="typeCNPJ">CNPJ</label>
+                      </div>
+                    </Row>
+                  </Col>
+                </Row>
                 <Form>
                   <h6 className="heading-small text-muted mb-4">
                     Informações
@@ -257,81 +325,169 @@ function ClientRegister(){
                       </Col>
                     </Row>
 
-                    <Row>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-username"
-                          >
-                            CPF
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            value={cpf}
-                            id="input-cpf"
-                            onChange={e => setCpf(e.target.value)}
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="6">
-                        <FormGroup>
+                    {
+                      isCpf && (
+                        <>
+                          <Row>
+                          <Col lg="6">
+                            <FormGroup>
+                              <label
+                                className="form-control-label"
+                                htmlFor="input-username"
+                              >
+                                CPF
+                              </label>
+                              <Input
+                                className="form-control-alternative"
+                                value={cpf}
+                                id="input-cpf"
+                                onChange={e => setCpf(e.target.value)}
+                                type="text"
+                              />
+                            </FormGroup>
+                          </Col>
+                          <Col lg="6">
+                            <FormGroup>
 
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-email"
-                          >
-                            Ocupação/Profissão
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            id="input-occupation"
-                            value={occupation}
-                            onChange={e => setOccupation(e.target.value)}                        
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                    </Row>
+                              <label
+                                className="form-control-label"
+                                htmlFor="input-email"
+                              >
+                                Ocupação/Profissão
+                              </label>
+                              <Input
+                                className="form-control-alternative"
+                                id="input-occupation"
+                                value={occupation}
+                                onChange={e => setOccupation(e.target.value)}                        
+                                type="text"
+                              />
+                            </FormGroup>
+                          </Col>
+                        </Row>
 
-                    <Row>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-username"
-                          >
-                            Nome da mãe
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            value={motherName}
-                            onChange={e => setMotherName(e.target.value)}
-                            id="input-username"
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="6">
-                        <FormGroup>
+                        <Row>
+                          <Col lg="6">
+                            <FormGroup>
+                              <label
+                                className="form-control-label"
+                                htmlFor="input-username"
+                              >
+                                Nome da mãe
+                              </label>
+                              <Input
+                                className="form-control-alternative"
+                                value={motherName}
+                                onChange={e => setMotherName(e.target.value)}
+                                id="input-username"
+                                type="text"
+                              />
+                            </FormGroup>
+                          </Col>
+                          <Col lg="6">
+                            <FormGroup>
 
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-email"
-                          >
-                            Sobrenome da mãe
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            id="input-email"
-                            value={motherSurname}
-                            onChange={e => setMotherSurname(e.target.value)}
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                    </Row>
+                              <label
+                                className="form-control-label"
+                                htmlFor="input-email"
+                              >
+                                Sobrenome da mãe
+                              </label>
+                              <Input
+                                className="form-control-alternative"
+                                id="input-email"
+                                value={motherSurname}
+                                onChange={e => setMotherSurname(e.target.value)}
+                                type="text"
+                              />
+                            </FormGroup>
+                          </Col>
+                        </Row>
+                        </>
+                      )
+                    }
+
+                    {
+                      !isCpf && (
+                        <>
+                          <Row>
+                          <Col lg="6">
+                            <FormGroup>
+                              <label
+                                className="form-control-label"
+                                htmlFor="input-username"
+                              >
+                                CNPJ
+                              </label>
+                              <Input
+                                className="form-control-alternative"
+                                value={cnpj}
+                                id="input-cnpj"
+                                onChange={e => setCnpj(e.target.value)}
+                                type="text"
+                              />
+                            </FormGroup>
+                          </Col>
+                          <Col lg="6">
+                            <FormGroup>
+
+                              <label
+                                className="form-control-label"
+                                htmlFor="input-email"
+                              >
+                                Inscrição estadual
+                              </label>
+                              <Input
+                                className="form-control-alternative"
+                                id="input-state-fiscal"
+                                value={stateFiscalNumber}
+                                onChange={e => setStateFiscalNumber(e.target.value)}                        
+                                type="text"
+                              />
+                            </FormGroup>
+                          </Col>
+                        </Row>
+
+                        <Row>
+                          <Col lg="6">
+                            <FormGroup>
+                              <label
+                                className="form-control-label"
+                                htmlFor="input-username"
+                              >
+                                Razão social
+                              </label>
+                              <Input
+                                className="form-control-alternative"
+                                value={legalName}
+                                onChange={e => setLegalName(e.target.value)}
+                                id="input-username"
+                                type="text"
+                              />
+                            </FormGroup>
+                          </Col>
+                          <Col lg="6">
+                            <FormGroup>
+
+                              <label
+                                className="form-control-label"
+                                htmlFor="input-email"
+                              >
+                                Nome fantasia
+                              </label>
+                              <Input
+                                className="form-control-alternative"
+                                id="input-email"
+                                value={tradeName}
+                                onChange={e => setTradeName(e.target.value)}
+                                type="text"
+                              />
+                            </FormGroup>
+                          </Col>
+                        </Row>
+                        </>
+                      )
+                    }
 
                   </div>
                   <hr className="my-4" />
@@ -667,7 +823,7 @@ function ClientRegister(){
                   </div>
 
                   <Col className='d-flex justify-content-center'>
-                    <Button color="primary" className='self-align-center'>
+                    <Button color="primary" className='self-align-center' onClick={(e) => handleSubmit(e)}>
                       Confirmar
                     </Button>
                   </Col>

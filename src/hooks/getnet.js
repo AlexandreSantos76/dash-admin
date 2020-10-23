@@ -14,9 +14,8 @@ function GetnetProvider({ children }){
     const response = await api.get(`http://getnet/pf/callback/${merchant.id}/${cpf}`)
   },[merchant.id]);
 
-  const handlePreRegister = useCallback(async (data) => {
+  const handlePreRegisterCpf = useCallback(async (data) => {
     const preRegisterData = {
-      merchant_id: merchant.id,
       legal_document_number: data.cpf,
       legal_name: `${data.name} ${data.surname}`,
       birth_date: data.birthdate,
@@ -40,21 +39,58 @@ function GetnetProvider({ children }){
         postal_code: data.mailingAddress.cep,
       },
       email: data.email,
-      acquirer_merchant_category_code: '', //FALTA,
       bank_accounts: {
         type_accounts: 'unique',
         ...data.bankAccounts,
-      }
+      },
+      user_id: data.user_id
     }
 
-    const response = await api.post('http://getnet/pf/create-presubseller', preRegisterData)
+    const response = await api.post('getnet/pre-register/pf', preRegisterData)
     
     return response.data;
   
-  },[merchant.id])
+  },[]);
+
+  const handlePreRegisterCnpj = useCallback(async (data) => {
+    const preRegisterData = {
+      legal_document_number: data.cnpj,
+      legal_name: data.legalName,
+      trade_name: data.tradeName,
+      state_fiscal_document_number: data.stateFiscalNumber,
+      business_address: {
+        mailing_address_equals: "N",
+        street: data.businessAddress.street,
+        number: data.businessAddress.number,
+        district: data.businessAddress.neighborhood,
+        city: data.businessAddress.city,
+        state: data.businessAddress.state,
+        postal_code: data.businessAddress.cep
+      },
+      mailing_address: {
+        street: data.mailingAddress.street,
+        number: data.mailingAddress.number,
+        district: data.mailingAddress.neighborhood,
+        city: data.mailingAddress.city,
+        state: data.mailingAddress.state,
+        postal_code: data.mailingAddress.cep,
+      },
+      email: data.email,
+      bank_accounts: {
+        type_accounts: 'unique',
+        ...data.bankAccounts,
+      },
+      user_id: data.user_id
+    }
+
+    const response = await api.post('getnet/pre-register/pj', preRegisterData)
+    
+    return response.data;
+  
+  },[])
 
   return (
-    <GetnetContext.Provider value={{cpfSituation, handlePreRegister}}>
+    <GetnetContext.Provider value={{cpfSituation, handlePreRegisterCpf, handlePreRegisterCnpj}}>
       {children}
     </GetnetContext.Provider>
   )
