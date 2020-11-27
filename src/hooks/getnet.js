@@ -1,18 +1,23 @@
 import React, { useContext, createContext, useCallback, useState } from 'react';
 import api from 'services/api';
+import {useAuth} from 'hooks/auth'
 
 
-const GetnetContext = createContext();
+const GatewayContext = createContext();
 
-function GetnetProvider({ children }){
+function GatewayProvider({ children }){
 
-  const [merchant, setMerchant ] = useState({
-    id: ''
-  })
+  const auth = useAuth()
 
-  const cpfSituation = useCallback(async (cpf) => {
-    const response = await api.get(`http://getnet/pf/callback/${merchant.id}/${cpf}`)
-  },[merchant.id]);
+  const callback = useCallback(async (document, type) => {
+    return api.get(`/gateway/callback?document=${document}&type=${type}`)
+    .then((result) => {
+      return ({status:true, data:result.data})
+      
+    }).catch((err) => {
+      console.log(err)
+    });
+  },[]);
 
   const handlePreRegisterCpf = useCallback(async (data) => {
     const preRegisterData = {
@@ -46,7 +51,7 @@ function GetnetProvider({ children }){
       user_id: data.user_id
     }
 
-    const response = await api.post('getnet/pre-register/pf', preRegisterData)
+    const response = await api.post('gateway/pre-register/pf', preRegisterData)
     
     return response.data;
   
@@ -83,27 +88,27 @@ function GetnetProvider({ children }){
       user_id: data.user_id
     }
 
-    const response = await api.post('getnet/pre-register/pj', preRegisterData)
+    const response = await api.post('gateway/pre-register/pj', preRegisterData)
     
     return response.data;
   
   },[])
 
   return (
-    <GetnetContext.Provider value={{cpfSituation, handlePreRegisterCpf, handlePreRegisterCnpj}}>
+    <GatewayContext.Provider value={{callback, handlePreRegisterCpf, handlePreRegisterCnpj}}>
       {children}
-    </GetnetContext.Provider>
+    </GatewayContext.Provider>
   )
 }
 
-function useGetnet(){
-  const context = useContext(GetnetContext);
+function useGateway(){
+  const context = useContext(GatewayContext);
 
   if(!context){
-    throw new Error('useGetnet must be used within an Getnet Provider')
+    throw new Error('useGateway must be used within an Gateway Provider')
   }
 
   return context;
 }
 
-export { GetnetProvider, useGetnet };
+export { GatewayProvider, useGateway };

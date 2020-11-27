@@ -1,0 +1,145 @@
+.mz-label {
+    padding: 4px 8px;
+    font-size: 10px;
+    line-height: 12px;
+    white-space: normal;
+    font-weight: 700;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.order-status {
+    position: relative;
+    width: 100%;
+    padding: 7px 13px;
+    margin: 0 4px;
+    text-align: center;
+    background-color: #eeeff5;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 2px 0 0 #d5d6db;
+    box-shadow: 0 2px 0 0 #d5d6db;
+    text-decoration: none !important;
+    text-transform: uppercase;
+}
+
+.mz-label-waiting_payment,
+.order-status-waiting_payment {
+    color: #fff;
+    background: #cc9214
+}
+
+.mz-label-cancelled,
+.order-status-cancelled {
+    color: #fff;
+    background: #e6274c
+}
+
+.mz-label-on_carriage,
+.order-status-on_carriage {
+    color: #fff;
+    background: #0696bd
+}
+
+.mz-label-delivered,
+.order-status-delivered {
+    color: #fff;
+    background: #00994e
+}
+
+.mz-label-shipment_exception,
+.order-status-shipment_exception {
+    color: #fff;
+    background: #e87717
+}
+
+.mz-label-invoiced,
+.order-status-invoiced {
+    color: #fff;
+    background: #9e6737
+}
+
+.mz-label-paid,
+.order-status-paid {
+    color: #fff;
+    background: #00a3a3
+}
+
+.mz-label-refused,
+.order-status-refused {
+    color: #fff;
+    background: #e6274c
+}
+
+.mz-label-authorized,
+.order-status-authorized {
+    color: #fff;
+    background: #448de2
+}
+
+.mz-label-created,
+.order-status-created {
+    color: #fff;
+    background: #666
+}
+
+.mz-label-handling_products,
+.order-status-handling_products {
+    color: #fff;
+    background: #e65cd2
+}
+
+.mz-label-chargeback,
+.mz-label-ready_for_shipping {
+    color: #fff;
+    background: #9358db
+}
+
+.mz-label-subscription-active {
+    color: #fff;
+    background: #00994e
+}
+
+.mz-label-subscription-trial {
+    color: #fff;
+    background: #448de2
+}
+
+.mz-label-subscription-pending_payment {
+    color: #fff;
+    background: #cc9214
+}
+
+.mz-label-subscription-blocked {
+    color: #fff;
+    background: #666
+}
+
+.mz-label-subscription-cancelled {
+    color: #fff;
+    background: #e6274c
+}
+
+.mz-label-charges-paid {
+    color: #fff;
+    background: #00a3a3
+}
+
+.mz-label-charges-refused {
+    color: #fff;
+    background: #e6274c
+}
+
+.mz-label-charges-pending_payment {
+    color: #fff;
+    background: #cc9214
+}
+
+.mz-label-charges-refunded {
+    color: #fff;
+    background: #725bc2
+}
+
+.mz-label-charges-chargedback {
+    color: #fff;
+    background: #666
+}

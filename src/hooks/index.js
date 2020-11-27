@@ -4,16 +4,16 @@ import { AuthProvider } from './auth';
 import { PlansProvider } from './plans';
 import { UsersProvider } from './users'
 import { ChargebacksProvider } from './chargebacks';
-import { GetnetProvider } from './getnet'
+import { GatewayProvider } from './getnet'
 
 const AppProvider = ({ children }) => (
   <AuthProvider>
     <UsersProvider>
       <PlansProvider>
         <ChargebacksProvider>
-          <GetnetProvider>
+          <GatewayProvider>
            { children }
-          </GetnetProvider>
+          </GatewayProvider>
         </ChargebacksProvider>
       </PlansProvider>
     </UsersProvider>

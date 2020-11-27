@@ -3,9 +3,11 @@ import Header from "components/Headers/Header.js";
 import { Button, Card, CardBody, CardFooter, CardHeader, Col, Container, CustomInput, Form, FormFeedback, FormGroup, Input, Label, Row, Table } from 'reactstrap';
 import api from 'services/api';
 import {useForm} from "react-hook-form"
+import { useHistory } from 'react-router-dom'
 
 
 const UserCreate = () => {
+    const history = useHistory();
     const { register, handleSubmit, watch, errors } = useForm();
     const [groups, setGroups] = useState()
     useEffect(() => {
@@ -56,11 +58,10 @@ const UserCreate = () => {
                                                     <Col sm="8">
                                                         <Card className="shadow">
                                                             <Form onSubmit={handleSubmit(onSubmit)}>
-                                                                <CardBody>
+                                                                <CardBody>                                                                
                                                                     <FormGroup>
                                                                         <Label>Email<span className="text-red">*</span></Label>
-                                                                        <Input type="email" name="email" innerRef={register({ required: true })} />
-                                                                        
+                                                                        <Input type="email" name="email" innerRef={register({ required: true })} />                                                                        
                                                                     </FormGroup>
                                                                     <FormGroup>
                                                                         <Label>Grupo<span className="text-red">*</span></Label>
@@ -68,8 +69,7 @@ const UserCreate = () => {
                                                                             {groups?.map(group => {
                                                                                 return(<option key={group.id} value={group.id}>{group.name}</option>)
                                                                             })}
-                                                                        </Input>
-                                                                        
+                                                                        </Input>                                                                        
                                                                     </FormGroup>
                                                                 </CardBody>
                                                                 <CardFooter>

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useHistory } from 'react-router-dom'
+
 // reactstrap components
 import {
   Badge,
@@ -19,43 +20,59 @@ import {
   Table,
   Container,
   Row,
-  UncontrolledTooltip
+  UncontrolledTooltip,
+  CardBody
 } from "reactstrap";
 // core components
 
 import { useUsers } from '../../hooks/users'
+import { useGateway } from '../../hooks/getnet'
 
 import Header from "components/Headers/Header.js";
 
 import api from '../../services/api';
 
-function Clients(){
-
+function Clients() {
+  const gateway = useGateway()
   const history = useHistory();
   const { saveSelectedUserId } = useUsers();
 
   const [clients, setClients] = useState([]);
+  const [filter, setFilter] = useState(1)
+
 
   useEffect(() => {
-    async function loadingClients(){
-      
-      const response = await api.get('/user');
-
+    async function loadingClients() {
+      const response = await api.get(`/user?filter=${filter}`);
       setClients(response.data);
-      console.log(response.data);
     }
-
     loadingClients();
-  },[])
+  }, [filter])
 
   const handleProfile = useCallback((client) => {
     saveSelectedUserId(client.id);
     history.push('/admin/client-profile')
-  },[history, saveSelectedUserId])
+  }, [history, saveSelectedUserId])
+
+  const handleCallback = async (document, type, index) => {
+    let { status, data } = await gateway.callback(document, type)
+    console.log(status);
+    if (status) {
+      let newArr = [...clients]
+      newArr[index].subseller.enabled = data.enabled
+      newArr[index].subseller.status = data.status
+      console.log(newArr[index]);
+      setClients(newArr)
+    }
+  }
+
+  const handleFilter = async (filter) => {
+    setFilter(filter)
+  }
 
   const handleNewClient = useCallback(() => {
-    history.push('/admin/client-register')
-  },[history])
+    history.push(`/admin/client-register`)
+  }, [history])
 
   return (
     <>
@@ -68,8 +85,26 @@ function Clients(){
             <Card className="shadow">
               <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
                 <h3 className="mb-0">Clientes</h3>
-                <Button color='primary' onClick={handleNewClient}>Cadastrar</Button>
+                <div>
+                  <Button color='warning' onClick={handleNewClient}>Atualizar Clientes Pendentes</Button>
+                  <Button color='primary' onClick={handleNewClient}>Cadastrar</Button>
+                </div>
               </CardHeader>
+              <CardBody>
+                <div className="status d-flex ">
+                  <a className={`order-status order-status-paid`} href="#mon" onClick={e => { e.preventDefault(); handleFilter(1) }} >
+                    <strong>Clientes Ativos</strong>
+                  </a>
+                  <a className={`order-status order-status-waiting_payment`} href="#anc" onClick={e => { e.preventDefault(); handleFilter(2) }}>
+                    <strong>Clientes Aguardando Liberação</strong>
+                  </a>
+                  <a className={`order-status order-status-cancelled`} href="#mon" onClick={e => { e.preventDefault(); handleFilter(3) }}>
+                    <strong>Clientes Cancelados</strong>
+                  </a>
+                </div>
+              </CardBody>
+
+
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
@@ -82,14 +117,14 @@ function Clients(){
                   </tr>
                 </thead>
                 <tbody>
-                  
-                    {clients.map(client => (
-                      <tr key={client.id}>
+
+                  {clients.map((client, index) => (
+                    <tr key={client.id}>
                       <th scope="row">
                         <Media className="align-items-center">
                           <a
                             className="avatar rounded-circle mr-3"
-                            href="#pablo"
+                            href="#"
                             onClick={e => e.preventDefault()}
                           >
                             <img
@@ -104,7 +139,7 @@ function Clients(){
                           </Media>
                         </Media>
                       </th>
-                      <td>{client.plan ? client.plan.name: "Sem Plano"}</td>
+                      <td>{client.plan ? client.plan.name : "Sem Plano"}</td>
                       <td>
                         <Badge color="" className="badge-dot mr-4">
                           <i className={client.paymentStatus === 'ok' ? "bg-success" : "bg-warning"} />
@@ -114,20 +149,18 @@ function Clients(){
 
                       <td>
                         <Badge color="" className="badge-dot mr-4">
-                          <i className={client.status ? "bg-success" : "bg-warning"} />
-                          {client.status ? "Ativo": 'Desativado'}
+                          <i className={client.subseller.enabled === "S" ? "bg-success" : "bg-warning"} />
+                          {client.subseller.status}
                         </Badge>
                       </td>
-  
+
                       <td className="text-right">
                         <UncontrolledDropdown>
                           <DropdownToggle
                             className="btn-icon-only text-light"
-                            href="#pablo"
                             role="button"
                             size="sm"
                             color=""
-                            onClick={e => e.preventDefault()}
                           >
                             <i className="fas fa-ellipsis-v" />
                           </DropdownToggle>
@@ -138,13 +171,17 @@ function Clients(){
                               Ver perfil
                             </DropdownItem>
                             <DropdownItem
-                              href="#pablo"
-                              onClick={e => e.preventDefault()}
+                              onClick={
+                                e => {
+                                  e.preventDefault()
+                                  handleCallback(client.document, client.type, index)
+                                }
+                              }
                             >
-                              Another action
+                              Atualizar Situação
                             </DropdownItem>
                             <DropdownItem
-                              href="#pablo"
+                              href="#"
                               onClick={e => e.preventDefault()}
                             >
                               Something else here
@@ -153,8 +190,8 @@ function Clients(){
                         </UncontrolledDropdown>
                       </td>
                     </tr>
-  
-                    ))}
+
+                  ))}
 
                 </tbody>
               </Table>
@@ -166,7 +203,7 @@ function Clients(){
                   >
                     <PaginationItem className="disabled">
                       <PaginationLink
-                        href="#pablo"
+                        href="#"
                         onClick={e => e.preventDefault()}
                         tabIndex="-1"
                       >
@@ -176,7 +213,7 @@ function Clients(){
                     </PaginationItem>
                     <PaginationItem className="active">
                       <PaginationLink
-                        href="#pablo"
+                        href="#"
                         onClick={e => e.preventDefault()}
                       >
                         1
@@ -184,7 +221,7 @@ function Clients(){
                     </PaginationItem>
                     <PaginationItem>
                       <PaginationLink
-                        href="#pablo"
+                        href="#"
                         onClick={e => e.preventDefault()}
                       >
                         2 <span className="sr-only">(current)</span>
@@ -192,7 +229,7 @@ function Clients(){
                     </PaginationItem>
                     <PaginationItem>
                       <PaginationLink
-                        href="#pablo"
+                        href="#"
                         onClick={e => e.preventDefault()}
                       >
                         3
@@ -200,7 +237,7 @@ function Clients(){
                     </PaginationItem>
                     <PaginationItem>
                       <PaginationLink
-                        href="#pablo"
+                        href="#"
                         onClick={e => e.preventDefault()}
                       >
                         <i className="fas fa-angle-right" />
@@ -213,155 +250,6 @@ function Clients(){
             </Card>
           </div>
         </Row>
-
-        <Row>
-          <div className="col">
-            <Card className="shadow">
-              <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
-                <h3 className="mb-0">Ranking</h3>
-              </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">Empresa</th>
-                    <th scope="col">Quantidade de Vendas</th>
-                    <th scope="col">Faturamento</th>
-                    <th scope="col">Status</th>
-                    {/* <th scope="col">Users</th> */}
-                    <th scope="col" />
-                  </tr>
-                </thead>
-                <tbody>
-                  
-                    {clients.map(client => (
-                      <tr key={client.id}>
-                      <th scope="row">
-                        <Media className="align-items-center">
-                          <a
-                            className="avatar rounded-circle mr-3"
-                            href="#pablo"
-                            onClick={e => e.preventDefault()}
-                          >
-                            <img
-                              alt="..."
-                              src={require("assets/img/theme/bootstrap.jpg")}
-                            />
-                          </a>
-                          <Media>
-                            <span className="mb-0 text-sm">
-                              {client.name}
-                            </span>
-                          </Media>
-                        </Media>
-                      </th>
-                      <td>220</td>
-                      <td>
-                        R$ 3.000,00
-                      </td>
-
-                      <td>
-                        <Badge color="" className="badge-dot mr-4">
-                          <i className={client.active ? "bg-success" : "bg-warning"} />
-                          {client.active ? "Ativo": 'Inativo'}
-                        </Badge>
-                      </td>
-  
-                      <td className="text-right">
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            className="btn-icon-only text-light"
-                            href="#pablo"
-                            role="button"
-                            size="sm"
-                            color=""
-                            onClick={e => e.preventDefault()}
-                          >
-                            <i className="fas fa-ellipsis-v" />
-                          </DropdownToggle>
-                          <DropdownMenu className="dropdown-menu-arrow" right>
-                            <DropdownItem
-                              onClick={handleProfile}
-                            >
-                              Ver perfil
-                            </DropdownItem>
-                            <DropdownItem
-                              href="#pablo"
-                              onClick={e => e.preventDefault()}
-                            >
-                              Another action
-                            </DropdownItem>
-                            <DropdownItem
-                              href="#pablo"
-                              onClick={e => e.preventDefault()}
-                            >
-                              Something else here
-                            </DropdownItem>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
-                      </td>
-                    </tr>
-  
-                    ))}
-
-                </tbody>
-              </Table>
-              <CardFooter className="py-4">
-                <nav aria-label="...">
-                  <Pagination
-                    className="pagination justify-content-end mb-0"
-                    listClassName="justify-content-end mb-0"
-                  >
-                    <PaginationItem className="disabled">
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                        tabIndex="-1"
-                      >
-                        <i className="fas fa-angle-left" />
-                        <span className="sr-only">Previous</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem className="active">
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                      >
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                      >
-                        2 <span className="sr-only">(current)</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                      >
-                        3
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                      >
-                        <i className="fas fa-angle-right" />
-                        <span className="sr-only">Next</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                  </Pagination>
-                </nav>
-              </CardFooter>
-            </Card>
-          </div>
-        </Row>
-
-
       </Container>
     </>
   );

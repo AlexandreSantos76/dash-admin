@@ -2,66 +2,27 @@
 import React, { useState, useCallback, useEffect } from "react";
 
 // reactstrap components
-import { Button, Card, CardHeader, CardBody,FormGroup,Form, Input, Container, Row, Col} from "reactstrap";
+import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, Row, Col, Label } from "reactstrap";
 // core components
 
 import { usePlans } from '../../hooks/plans';
-import { useGetnet } from '../../hooks/getnet';
-import { useUsers } from '../../hooks/users';
 
 import UserHeader from "components/Headers/UserHeader.js";
+import { cpf as validaCpf, cnpj as validaCnpj } from 'cpf-cnpj-validator';
+import { useForm } from "react-hook-form"
+import {userRegister} from "hooks/users"
 
 
-
-function ClientRegister(){
+function ClientRegister() {
 
   const { getPlans } = usePlans();
-  const { cpfSituation, handlePreRegisterCpf, handlePreRegisterCnpj } = useGetnet();
-  const {  userRegister } = useUsers();
+  const { register, handleSubmit, watch, errors } = useForm();
 
-  const [isCpf, setIsCpf] = useState(true);
-
-  const [name, setName] = useState('');
-  const [surname, setSurname] = useState('');
-  const [birthdate, setBirthdate] = useState('');
-  const [email, setEmail ] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [occupation, setOccupation ] = useState('');
-  const [motherName, setMotherName] = useState('');
-  const [motherSurname, setMotherSurname] = useState('')
-
-  const [businessStreet, setBusinessStreet] = useState('');
-  const [businessCity, setBusinessCity] = useState('');
-  const [businessState, setBusinessState] = useState('');
-  const [businessCEP, setBusinessCEP] = useState('');
-
-  const [street, setStreet] = useState('');
-  const [city, setCity]= useState('');
-  const [state, setState ] = useState('');
-  const [cep, setCep] = useState('');
-
-  const [plan, setPlan ] = useState('')
+  const [isCpf, setIsCpf] = useState(false);
   const [plans, setPlans] = useState([]);
 
-  const [cnpj, setCnpj] = useState('');
-  const [legalName, setLegalName ] = useState('');
-  const [tradeName, setTradeName ] = useState('');
-  const [stateFiscalNumber, setStateFiscalNumber ] = useState('');
-
-
-
-
-  const [bankAccounts, setBankAccounts] = useState([{
-    bank_code: '',
-    agency: '',
-    account: '',
-    account_type: ''
-  }]);
-
-  const [test, setTest] = useState(false)
-
   useEffect(() => {
-    async function loadingPlan(){
+    async function loadingPlan() {
       const response = await getPlans();
 
       setPlans(response);
@@ -69,137 +30,29 @@ function ClientRegister(){
 
     loadingPlan();
 
-  },[getPlans]);
-  
-  useEffect(() => {
-    async function verifyCpfValidate(){
-      if(cpf.length === 11){
-        await cpfSituation(cpf);
-      };
+  }, [getPlans]);
+
+  const onSubmit = async data => {
+    console.log(data)
+    let { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, address, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
+    let userData = { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email }
+    let addresses = { name: "Bussines Address", address, number, neighborhood, city, state, postcode, complement }
+    let bankAccounts = {
+      type_accounts: "unique",
+      unique_account: { codeBank, agency, account, accountType, accountDigit }
     }
-    verifyCpfValidate()
-  },[cpf, cpfSituation])
-
-  const handleBankAccount = useCallback((index, field, value) => {
-    const stateUpdated = bankAccounts;
-    stateUpdated[index] = {
-      ...bankAccounts[index],
-      [field]: value,
+    let dataSubmit = {
+      user: userData,
+      mailingAddressEquals: "S",
+      addresses: [address],
+      bankAccounts: bankAccounts,
+      accepted_contract: "S",
+      liability_chargeback: "S",
+      marketplace_store: "N",
+      payment_plan: 3
     }
-
-    setBankAccounts(stateUpdated)
-    console.log(stateUpdated)
-    setTest(state => !state)
-  },[bankAccounts])
-
-  const handleAddBankAccount = useCallback((e) => {
-    e.preventDefault();
-
-    const bankAccountsUpdated = [
-      ...bankAccounts,
-     {
-      bank_code: '',
-      agency: '',
-      account: '',
-      account_type: ''
-     }
-    ]
-
-    setBankAccounts(bankAccountsUpdated)
-
-    setTest(state => !state)
-  },[bankAccounts]);
-
-  const handleRemoveBankAccount = useCallback((e, index) => {
-
-    e.preventDefault();
-
-    if(bankAccounts.length - 1 < 1){
-      return
-    }
-
-    const bankAccountsUpdated = bankAccounts;
-
-    bankAccountsUpdated.splice(index, 1);
-
-    setBankAccounts(bankAccountsUpdated);
-    setTest(state => !state)
-
-
-  },[bankAccounts]);
-
-
-
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    const client = await userRegister({
-      name,
-      email,
-      password: 'senha123',
-      passwordConfirm: 'senha123',
-      cpf: `${isCpf ? cpf: cnpj}`,
-      plan_id: plan,
-    })
-    
-
-    if(isCpf){
-      handlePreRegisterCpf({  
-        cpf,
-        name,
-        surname,
-        birthdate,
-        motherName,
-        motherSurname,
-        businessAddress: {
-          street: businessStreet,
-          // number: businessNumber,
-          // neighborhood: businessNeighborhood,
-          city: businessCity,
-          state: businessState,
-          cep: businessCEP,
-        },
-        mailingAddress: {
-          street,
-          // number,
-          // neighborhood,
-          city,
-          state,
-          cep
-        },
-        email,
-        bankAccounts, 
-        user_id: client.id
-      })
-    } else {
-      handlePreRegisterCnpj({  
-        cnpj,
-        name,
-        surname,
-        tradeName,
-        legalName,
-        stateFiscalNumber,
-        businessAddress: {
-          street: businessStreet,
-          // number: businessNumber,
-          // neighborhood: businessNeighborhood,
-          city: businessCity,
-          state: businessState,
-          cep: businessCEP,
-        },
-        mailingAddress: {
-          street,
-          // number,
-          // neighborhood,
-          city,
-          state,
-          cep
-        },
-        email,
-        bankAccounts, 
-        user_id: client.id
-      });
-    }
-  },[bankAccounts, birthdate, businessCEP, businessCity, businessState, businessStreet, cep, city, cnpj, cpf, email, handlePreRegisterCnpj, handlePreRegisterCpf, isCpf, legalName, motherName, motherSurname, name, plan, state, stateFiscalNumber, street, surname, tradeName, userRegister])
+    //result = userRegister(dataSubmit)
+  }
 
   return (
     <>
@@ -217,181 +70,155 @@ function ClientRegister(){
                 </Row>
               </CardHeader>
               <CardBody>
+                <h6 className="heading-small text-muted mb-4">Tipo de conta</h6>
+                <Form onSubmit={handleSubmit(onSubmit)}>
+                  <Row>
+                    <Col>
 
-                <Row>
-                  <Col>
-                    <label>Tipo de conta</label>
-                    <Row>
-                    <div class="custom-control custom-radio mb-3">
-                        <input type="radio" id="typeCPF" name="accountType" class="custom-control-input" value={isCpf} onChange={() => setIsCpf(true)}/>
-                        <label class="custom-control-label" for="typeCPF">CPF</label>
-                      </div>
-                      <div class="custom-control custom-radio" style={{marginLeft: '15px'}}>
-                        <input type="radio" id="typeCNPJ" name="accountType" class="custom-control-input" value={!isCpf} onChange={() => setIsCpf(false)}/>
-                        <label class="custom-control-label" for="typeCNPJ">CNPJ</label>
-                      </div>
-                    </Row>
-                  </Col>
-                </Row>
-                <Form>
+                      <Row>
+                        <Col className="mb-3 ">
+                          <div className="d-flex pl-lg-4">
+                            <div className="custom-control custom-radio mb-3">
+                              <Input className="" type="radio" name="type" onChange={() => setIsCpf(true)} value="pf" />
+                              <Label className="custom-control-Label" for="typeCPF">CPF</Label>
+                            </div>
+                            <div className="custom-control custom-radio" style={{ marginLeft: '15px' }}>
+                              <Input className="c" type="radio" name="type" defaultChecked onChange={() => setIsCpf(false)} value="pj" />
+                              <Label className="custom-control-Label" for="typeCNPJ">CNPJ</Label>
+                            </div>
+                          </div>
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+
                   <h6 className="heading-small text-muted mb-4">
                     Informações
                   </h6>
                   <div className="pl-lg-4">
-                  <Row>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-first-name"
-                          >
-                            Nome
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            id="input-first-name"
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-last-name"
-                          >
-                            Sobrenome
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            value={surname}
-                            id="input-last-name"
-                            onChange={e => setSurname(e.target.value)}
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                    </Row>
-
                     <Row>
                       <Col lg="6">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-username"
-                          >
-                            Data de nascimento
-                          </label>
+                          <Label className="form-control-Label" for="input-name">{isCpf ? "Nome" : "Razão Social"}</Label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="lucky.jesse"
-                            id="input-username"
-                            placeholder="Username"
+                            name="legalName"
+                            id="input-name"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
                       <Col lg="6">
                         <FormGroup>
-
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-email"
-                          >
-                            E-mail
-                          </label>
+                          <Label className="form-control-Label" for='input-email'>Email</Label>
                           <Input
                             className="form-control-alternative"
                             id="input-email"
                             placeholder="exemplo@monetiz.com.br"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
+                            name="email"
                             type="email"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
                     </Row>
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <Label className="form-control-Label" for="input-mobile">
+                            Celular
+                                </Label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-mobile"
+                            name="mobile"
+                            type="text"
+                            innerRef={register({ required: true })}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="6">
+                        <FormGroup>
+                          <Label className="form-control-Label" for="input-phone">
+                            Telefone Comercial
+                                </Label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-phone"
+                            name="phone"
+                            type="text"
+                            innerRef={register({ required: false })}
+                          />
+                        </FormGroup>
 
+                      </Col>
+                    </Row>
                     {
                       isCpf && (
                         <>
                           <Row>
-                          <Col lg="6">
-                            <FormGroup>
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-username"
-                              >
-                                CPF
-                              </label>
-                              <Input
-                                className="form-control-alternative"
-                                value={cpf}
-                                id="input-cpf"
-                                onChange={e => setCpf(e.target.value)}
-                                type="text"
-                              />
-                            </FormGroup>
-                          </Col>
-                          <Col lg="6">
-                            <FormGroup>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label className="form-control-Label" for="input-cpf">CPF</Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  id="input-cpf"
+                                  name="document"
+                                  type="text"
+                                  innerRef={register({ required: true })}
+                                />
+                              </FormGroup>
+                            </Col>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label className="form-control-Label" for="input-occupation">
+                                  Ocupação/Profissão
+                                </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  id="input-occupation"
+                                  name="occupation"
+                                  type="text"
+                                  innerRef={register({ required: true })}
+                                />
+                              </FormGroup>
+                            </Col>
+                          </Row>
 
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-email"
-                              >
-                                Ocupação/Profissão
-                              </label>
-                              <Input
-                                className="form-control-alternative"
-                                id="input-occupation"
-                                value={occupation}
-                                onChange={e => setOccupation(e.target.value)}                        
-                                type="text"
-                              />
-                            </FormGroup>
-                          </Col>
-                        </Row>
+                          <Row>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label className="form-control-Label" for="input-mothername">
+                                  Nome da Mãe
+                                </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  name="mothername"
+                                  id="input-mothersName"
+                                  type="text"
+                                  innerRef={register({ required: true })}
+                                />
+                              </FormGroup>
+                            </Col>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label className="form-control-Label" for="input-birthday">
+                                  Data de nascimento
+                                </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  defaultValue=""
+                                  id="input-birthday"
+                                  name="birthdate"
+                                  type="date"
+                                  innerRef={register({ required: true })}
+                                />
 
-                        <Row>
-                          <Col lg="6">
-                            <FormGroup>
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-username"
-                              >
-                                Nome da mãe
-                              </label>
-                              <Input
-                                className="form-control-alternative"
-                                value={motherName}
-                                onChange={e => setMotherName(e.target.value)}
-                                id="input-username"
-                                type="text"
-                              />
-                            </FormGroup>
-                          </Col>
-                          <Col lg="6">
-                            <FormGroup>
+                              </FormGroup>
+                            </Col>
+                          </Row>
 
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-email"
-                              >
-                                Sobrenome da mãe
-                              </label>
-                              <Input
-                                className="form-control-alternative"
-                                id="input-email"
-                                value={motherSurname}
-                                onChange={e => setMotherSurname(e.target.value)}
-                                type="text"
-                              />
-                            </FormGroup>
-                          </Col>
-                        </Row>
                         </>
                       )
                     }
@@ -400,80 +227,65 @@ function ClientRegister(){
                       !isCpf && (
                         <>
                           <Row>
-                          <Col lg="6">
-                            <FormGroup>
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-username"
-                              >
-                                CNPJ
-                              </label>
-                              <Input
-                                className="form-control-alternative"
-                                value={cnpj}
-                                id="input-cnpj"
-                                onChange={e => setCnpj(e.target.value)}
-                                type="text"
-                              />
-                            </FormGroup>
-                          </Col>
-                          <Col lg="6">
-                            <FormGroup>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label
+                                  className="form-control-Label"
+                                  for="input-cnpj"
+                                >
+                                  CNPJ
+                              </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  name="document"
+                                  id="input-cnpj"
+                                  type="text"
+                                  innerRef={register({ required: true })}
+                                />
+                              </FormGroup>
+                            </Col>
+                            <Col lg="6">
+                              <FormGroup>
 
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-email"
-                              >
-                                Inscrição estadual
-                              </label>
-                              <Input
-                                className="form-control-alternative"
-                                id="input-state-fiscal"
-                                value={stateFiscalNumber}
-                                onChange={e => setStateFiscalNumber(e.target.value)}                        
-                                type="text"
-                              />
-                            </FormGroup>
-                          </Col>
-                        </Row>
+                                <Label
+                                  className="form-control-Label"
+                                  for="input-state-fiscal"
+                                >
+                                  Inscrição estadual
+                              </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  id="input-state-fiscal"
+                                  name="stateFiscalDocument"
+                                  innerRef={register({ required: true })}
+                                  type="text"
+                                />
+                              </FormGroup>
+                            </Col>
+                          </Row>
 
-                        <Row>
-                          <Col lg="6">
-                            <FormGroup>
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-username"
-                              >
-                                Razão social
-                              </label>
-                              <Input
-                                className="form-control-alternative"
-                                value={legalName}
-                                onChange={e => setLegalName(e.target.value)}
-                                id="input-username"
-                                type="text"
-                              />
-                            </FormGroup>
-                          </Col>
-                          <Col lg="6">
-                            <FormGroup>
+                          <Row>
 
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-email"
-                              >
-                                Nome fantasia
-                              </label>
-                              <Input
-                                className="form-control-alternative"
-                                id="input-email"
-                                value={tradeName}
-                                onChange={e => setTradeName(e.target.value)}
-                                type="text"
-                              />
-                            </FormGroup>
-                          </Col>
-                        </Row>
+                            <Col lg="6">
+                              <FormGroup>
+
+                                <Label
+                                  className="form-control-Label"
+                                  for="input-tradename"
+                                >
+                                  Nome fantasia
+                                </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  id="input-tradename"
+                                  name="tradeName"
+                                  innerRef={register({ required: true })}
+                                  type="text"
+                                />
+                              </FormGroup>
+                            </Col>
+                            <Col lg="6"></Col>
+                          </Row>
                         </>
                       )
                     }
@@ -482,131 +294,132 @@ function ClientRegister(){
                   <hr className="my-4" />
                   {/* Address */}
                   <h6 className="heading-small text-muted mb-4">
-                    Endereço Comercial
+                    Endereço
                   </h6>
+
                   <div className="pl-lg-4">
                     <Row>
                       <Col md="12">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-address"
+                          <Label
+                            className="form-control-Label"
+                            for="input-address"
                           >
                             Endereço
-                          </label>
+                          </Label>
                           <Input
                             className="form-control-alternative"
-                            value={businessStreet}
-                            onChange={e => setBusinessStreet(e.target.value)}
+                            name="address"
                             id="input-address"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
                     </Row>
                     <Row>
+
                       <Col lg="4">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-city"
-                          >
-                            Bairro
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            value={setBusinessCity}
-                            onChange={e => setBusinessCity(e.target.value)}
-                            id="input-city"
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="4">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-country"
+                          <Label
+                            className="form-control-Label"
+                            for="input-number"
                           >
                             Número
-                          </label>
+                          </Label>
                           <Input
                             className="form-control-alternative"
-                            value={businessState}
-                            onChange={e => setBusinessState(e.target.value)}
-                            id="input-country"
+                            name="number"
+                            id="input-number"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
                       <Col lg="4">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-country"
+                          <Label
+                            className="form-control-Label"
+                            for="input-neighborhood"
+                          >
+                            Bairro
+                          </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="neighborhood"
+                            id="input-neighborhood"
+                            type="text"
+                            innerRef={register({ required: true })}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-complement"
                           >
                             Complemento
-                          </label>
+                          </Label>
                           <Input
                             className="form-control-alternative"
-                            id="input-postal-code"
-                            value={businessCEP}
-                            onChange={e => setBusinessCEP(e.target.value)}
+                            id="input-complement"
+                            name="complement"
                             type="text"
+                            innerRef={register()}
                           />
                         </FormGroup>
                       </Col>
                     </Row>
-
                     <Row>
                       <Col lg="4">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-city"
+                          <Label
+                            className="form-control-Label"
+                            for="input-city"
                           >
                             Cidade
-                          </label>
+                          </Label>
                           <Input
                             className="form-control-alternative"
-                            value={setBusinessCity}
-                            onChange={e => setBusinessCity(e.target.value)}
+                            name="city"
                             id="input-city"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
                       <Col lg="4">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-country"
+                          <Label
+                            className="form-control-Label"
+                            for="input-state"
                           >
                             Estado
-                          </label>
+                          </Label>
                           <Input
                             className="form-control-alternative"
-                            value={businessState}
-                            onChange={e => setBusinessState(e.target.value)}
-                            id="input-country"
+                            name="state"
+                            id="input-state"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
                       <Col lg="4">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-country"
+                          <Label
+                            className="form-control-Label"
+                            for="input-postcode"
                           >
                             CEP
-                          </label>
+                          </Label>
                           <Input
                             className="form-control-alternative"
-                            id="input-postal-code"
-                            value={businessCEP}
-                            onChange={e => setBusinessCEP(e.target.value)}
+                            id="input-postcode"
+                            name="postcode"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
@@ -614,205 +427,110 @@ function ClientRegister(){
                   </div>
 
                   <hr className="my-4" />
-                  {/* Address */}
-                  <h6 className="heading-small text-muted mb-4">
-                    Endereço de correspondência
-                  </h6>
+                  <h6 className="heading-small text-muted mb-4">Conta bancária</h6>
                   <div className="pl-lg-4">
                     <Row>
-                      <Col md="12">
+                      <Col lg="2">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-address"
+                          <Label
+                            className="form-control-Label"
                           >
-                            Endereço
-                          </label>
+                            Código do banco
+                                  </Label>
                           <Input
                             className="form-control-alternative"
-                            value={street}
-                            onChange={e => setState(e.target.value)}
-                            id="input-address"
+                            placeholder="Banco"
+                            name="codeBank"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
-                    </Row>
-                    <Row>
-                      <Col lg="4">
+                      <Col lg="2">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-city"
-                          >
-                            Cidade
-                          </label>
+                          <Label className="form-control-Label">
+                            Agência
+                                  </Label>
                           <Input
                             className="form-control-alternative"
-                            value={city}
-                            onChange={e => setCity(e.target.value)}
-                            id="input-city"
+                            name="agency"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
-                      <Col lg="4">
+                      <Col lg="3">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-country"
+                          <Label
+                            className="form-control-Label"
                           >
-                            Estado
-                          </label>
+                            Número da conta
+                                  </Label>
                           <Input
                             className="form-control-alternative"
-                            value={state}
-                            onChange={e => setState(e.target.value)}
-                            id="input-country"
+                            name="account"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
-                      <Col lg="4">
+                      <Col lg="2">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-country"
-                          >
-                            CEP
-                          </label>
+                          <Label className="form-control-Label">
+                            Dígito da Conta
+                                  </Label>
                           <Input
-                            className="form-control-alternative"
-                            id="input-postal-code"
-                            value={cep}
-                            onChange={e => setCep(e.target.value)}
+                            className="form-control-alternative .inputNumber"
+                            name="accountDigit"
                             type="text"
+                            innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
-                    </Row>
-                  </div>
+                      <Col lg="2">
 
-                  <hr className="my-4" />
-                  <h6 className="heading-small text-muted mb-4">Contas bancárias</h6>
-                  <div className="pl-lg-4">
-                    <FormGroup>
-                      <Row style={{display: 'flex', justifyContent: 'space-between'}}>
-                        <label>Contas bancárias</label>
-                        <Button 
-                          color='primary'
-                          onClick={(e) => handleAddBankAccount(e)} 
-                        >
-                            Adicionar outra conta
-                        </Button>
-                      </Row>
-                       {
-                         bankAccounts.map((ba, index) => (
-                           <div>
-                             <Row className='d-flex align-items-center'>
-                              <Col lg="2">
-                                <FormGroup>
-                                  <label
-                                    className="form-control-label"
-                                    htmlFor="input-city"
-                                  >
-                                    Código do banco
-                                  </label>
-                                  <Input
-                                    className="form-control-alternative"
-                                    id="input-city"
-                                    placeholder="City"
-                                    type="text"
-                                    value={ba.bank_code}
-                                    onChange={(e) => handleBankAccount(index, 'bank_code', e.target.value)}
-                                  />
-                                </FormGroup>
-                              </Col>
-                              <Col lg="3">
-                                <FormGroup>
-                                  <label
-                                    className="form-control-label"
-                                    htmlFor="input-country"
-                                  >
-                                    Agência
-                                  </label>
-                                  <Input
-                                    className="form-control-alternative"
-                                    id="input-country"
-                                    type="text"
-                                    value={ba.agency}
-                                    onChange={(e) => handleBankAccount(index, 'agency', e.target.value)}
-                                  />
-                                </FormGroup>
-                              </Col>
-                              <Col lg="2">
-                                <FormGroup>
-                                  <label
-                                    className="form-control-label"
-                                    htmlFor="input-country"
-                                  >
-                                    Número da conta
-                                  </label>
-                                  <Input
-                                    className="form-control-alternative"
-                                    id="input-postal-code"
-                                    value={ba.account}
-                                    onChange={(e) => handleBankAccount(index, 'account', e.target.value)}
-                                  />
-                                </FormGroup>
-                              </Col>
-                              <Col lg="3">
-                                <FormGroup>
-                                  <label
-                                    className="form-control-label"
-                                    htmlFor="input-country"
-                                  >
-                                    Tipo da conta
-                                  </label>
-                                  <Input
-                                    className="form-control-alternative"
-                                    id="input-postal-code"
-                                    value={ba.account_type}
-                                    onChange={(e) => handleBankAccount(index, 'account_type', e.target.value)}
-                                  />
-                                </FormGroup>
-                              
-                              </Col>
-                              <Col lg='2' style={{justifySelf:'flex-end'}}> 
-                                <Button 
-                                  color='danger' 
-                                  outline
-                                  onClick={(e) => handleRemoveBankAccount(e, index)}
-                                  >Excluir
-                                </Button>
-                              </Col>
-                            </Row>
-                           </div>
-                         ))
-                       }
-                    </FormGroup>
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                          >
+                            Tipo da conta
+                                  </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="accountType"
+                            type="select"
+                            innerRef={register({ required: true })}
+                          >
+                            <option value="C" >Conta Corrente</option>
+                            <option value="P" >Conta Poupança</option>
+                          </Input>
+                        </FormGroup>
+
+                      </Col>
+
+                    </Row>
                   </div>
 
                   <hr className="my-4" />
                   <h6 className="heading-small text-muted mb-4">Plano</h6>
                   <div className="pl-lg-4">
                     <FormGroup>
-                      <label>Plano selecionado</label>
-                        <Input 
-                          type="select" 
-                          name="select" 
-                          id="exampleSelect"
-                          onChange={e => setPlan(e.target.value)}
-                        >
-                         {plans.map(plan => (
-                           <option value={plan.id} key={plan.id}>{plan.name}</option>
-                         ))}
-                        </Input>
+                      <Label>Plano selecionado</Label>
+                      <Input
+                        type="select"
+                        name="plainId"
+                        id="exampleSelect"
+                        innerRef={register({ required: true })}
+                      >
+                        {plans.map(plan => (
+                          <option value={plan.id} key={plan.id}>{plan.name}</option>
+                        ))}
+                      </Input>
                     </FormGroup>
                   </div>
 
                   <Col className='d-flex justify-content-center'>
-                    <Button color="primary" className='self-align-center' onClick={(e) => handleSubmit(e)}>
+                    <Button color="primary" className='self-align-center' >
                       Confirmar
                     </Button>
                   </Col>

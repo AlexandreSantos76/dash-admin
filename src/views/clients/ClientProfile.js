@@ -16,31 +16,27 @@ import {
   Table,
   Media,
   Badge,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
+  Label,
 } from "reactstrap";
 
 import { format, parseISO, isAfter } from 'date-fns';
 import { formatPrice } from '../../utils/format';
 import { useUsers } from '../../hooks/users';
+import { useForm } from "react-hook-form"
+
 // core components
 import UserHeader from "components/Headers/UserHeader.js";
 import api from "services/api";
 
 function ClientProfile(){
-
+  const { register, handleSubmit, watch, errors } = useForm();
   const {getSelectedUserId, updateUser } = useUsers();
-
+  const [isCpf, setIsCpf] = useState(false);
   const [editable, setEditable] = useState(false);
 
   const [client, setClient] = useState({});
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [celular, setCelular] = useState("");
-  const [status, setStatus] = useState("");
+  const [address, setAddress] = useState({});
+  const [banks, setBanks] = useState({})
   const [sales, setSales] = useState([]);
   const [chargebacks, setChargebacks] = useState([]);
 
@@ -62,13 +58,10 @@ function ClientProfile(){
       const response = await api.get(`/user/findOne/${user_id}`);
       const responsePlans = await api.get('/plans/list');
 
-    
+      
       setClient(response.data.user);
-      setName(response.data.user.name);
-      setCpf(response.data.user.cpf);
-      setCelular(response.data.user.celular);
-      setEmail(response.data.user.email);
-      setStatus(response.data.user.status);
+      setAddress(response.data.user.addresses[0])
+      setBanks(response.data.user.banks[0])
       setPlanSelected(response.data.user.plan_id);
       setSales(response.data.user.store.orders);
       setChargebacks(response.data.user.chargebacks);
@@ -80,20 +73,9 @@ function ClientProfile(){
     loadingData();
   },[getSelectedUserId, user_id])
 
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
+  const onSubmit = () => {
 
-    const data = {
-      id:client.id,
-      name,
-      email,
-      cpf,
-      celular,
-      status,
-      plan_id: planSelected
-    }
-    updateUser(data)
-  },[celular, client.id, cpf, email, name, planSelected, status, updateUser])
+  }
 
   return (
     <>
@@ -122,7 +104,9 @@ function ClientProfile(){
               </CardHeader>
               <CardBody>
                 {client && (
-                  <Form onSubmit={(e) => handleSubmit(e)} id="form">
+                  <Form onSubmit={handleSubmit(onSubmit)}>
+                  
+
                   <h6 className="heading-small text-muted mb-4">
                     Informações
                   </h6>
@@ -130,37 +114,28 @@ function ClientProfile(){
                     <Row>
                       <Col lg="6">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-username"
-                          >
-                            Usuário
-                          </label>
+                          <Label className="form-control-Label" for="input-name">{isCpf ? "Nome" : "Razão Social"}</Label>
                           <Input
                             className="form-control-alternative"
-                            id="input-username"
-                            value={name}
+                            name="legalName"
+                            id="input-name"
                             type="text"
-                            disabled={!editable}
-                            onChange={(e) => setName(e.target.value)}
+                            innerRef={register({ required: true })}
+                            defaultValue={client.legalName}
                           />
                         </FormGroup>
                       </Col>
                       <Col lg="6">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-email"
-                          >
-                            E-mail
-                          </label>
+                          <Label className="form-control-Label" for='input-email'>Email</Label>
                           <Input
                             className="form-control-alternative"
                             id="input-email"
-                            value={email}
+                            placeholder="exemplo@monetiz.com.br"
+                            name="email"
                             type="email"
-                            disabled={!editable}
-                            onChange={(e) => setEmail(e.target.value)}
+                            innerRef={register({ required: true })}
+                            defaultValue={client.email}
                           />
                         </FormGroup>
                       </Col>
@@ -168,170 +143,441 @@ function ClientProfile(){
                     <Row>
                       <Col lg="6">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-first-name"
-                          >
-                            CPF
-                          </label>
+                          <Label className="form-control-Label" for="input-mobile">
+                            Celular
+                                </Label>
                           <Input
                             className="form-control-alternative"
-                            id="input-first-name"
-                            value={cpf}
+                            id="input-mobile"
+                            name="mobile"
                             type="text"
-                            disabled={!editable}
-                            onChange={(e) => setCpf(e.target.value)}
+                            innerRef={register({ required: true })}
+                            defaultValue={client.mobile}
                           />
                         </FormGroup>
                       </Col>
                       <Col lg="6">
                         <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-last-name"
-                          >
-                            celular
-                          </label>
+                          <Label className="form-control-Label" for="input-phone">
+                            Telefone Comercial
+                                </Label>
                           <Input
                             className="form-control-alternative"
-                            id="input-last-name"
-                            value={celular}
+                            id="input-phone"
+                            name="phone"
                             type="text"
-                            disabled={!editable}
+                            innerRef={register({ required: false })}
+                            defaultValue={client.phone}
+                          />
+                        </FormGroup>
+
+                      </Col>
+                    </Row>
+                    {
+                      isCpf && (
+                        <>
+                          <Row>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label className="form-control-Label" for="input-cpf">CPF</Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  id="input-cpf"
+                                  name="document"
+                                  type="text"
+                                  innerRef={register({ required: true })}
+                                  defaultValue={client.document}
+                                />
+                              </FormGroup>
+                            </Col>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label className="form-control-Label" for="input-occupation">
+                                  Ocupação/Profissão
+                                </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  id="input-occupation"
+                                  name="occupation"
+                                  type="text"
+                                  innerRef={register({ required: true })}
+                                  defaultValue={client.occupation}
+                                />
+                              </FormGroup>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label className="form-control-Label" for="input-mothername">
+                                  Nome da Mãe
+                                </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  name="mothername"
+                                  id="input-mothersName"
+                                  type="text"
+                                  innerRef={register({ required: true })}
+                                  defaultValue={client.motherName}
+                                />
+                              </FormGroup>
+                            </Col>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label className="form-control-Label" for="input-birthday">
+                                  Data de nascimento
+                                </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  defaultValue=""
+                                  id="input-birthday"
+                                  name="birthdate"
+                                  type="date"
+                                  innerRef={register({ required: true })}
+                                  defaultValue={client.birthdate}
+                                />
+
+                              </FormGroup>
+                            </Col>
+                          </Row>
+
+                        </>
+                      )
+                    }
+
+                    {
+                      !isCpf && (
+                        <>
+                          <Row>
+                            <Col lg="6">
+                              <FormGroup>
+                                <Label
+                                  className="form-control-Label"
+                                  for="input-cnpj"
+                                >
+                                  CNPJ
+                              </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  name="document"
+                                  id="input-cnpj"
+                                  type="text"
+                                  innerRef={register({ required: true })}
+                                  defaultValue={client.document}
+                                />
+                              </FormGroup>
+                            </Col>
+                            <Col lg="6">
+                              <FormGroup>
+
+                                <Label
+                                  className="form-control-Label"
+                                  for="input-state-fiscal"
+                                >
+                                  Inscrição estadual
+                              </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  id="input-state-fiscal"
+                                  name="stateFiscalDocument"
+                                  innerRef={register({ required: true })}
+                                  type="text"
+                                  defaultValue={client.stateFiscalDocument}
+                                />
+                              </FormGroup>
+                            </Col>
+                          </Row>
+
+                          <Row>
+
+                            <Col lg="6">
+                              <FormGroup>
+
+                                <Label
+                                  className="form-control-Label"
+                                  for="input-tradename"
+                                >
+                                  Nome fantasia
+                                </Label>
+                                <Input
+                                  className="form-control-alternative"
+                                  id="input-tradename"
+                                  name="tradeName"
+                                  innerRef={register({ required: true })}
+                                  type="text"
+                                  defaultValue={client.tradeName}
+                                />
+                              </FormGroup>
+                            </Col>
+                            <Col lg="6"></Col>
+                          </Row>
+                        </>
+                      )
+                    }
+
+                  </div>
+                  <hr className="my-4" />
+                  {/* Address */}
+                  <h6 className="heading-small text-muted mb-4">
+                    Endereço
+                  </h6>
+
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col md="12">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-address"
+                          >
+                            Endereço
+                          </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="address"
+                            id="input-address"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={address.address}
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+
+                      <Col lg="4">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-number"
+                          >
+                            Número
+                          </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="number"
+                            id="input-number"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={address.number}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-neighborhood"
+                          >
+                            Bairro
+                          </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="neighborhood"
+                            id="input-neighborhood"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={address.neighborhood}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-complement"
+                          >
+                            Complemento
+                          </Label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-complement"
+                            name="complement"
+                            type="text"
+                            innerRef={register()}
+                            defaultValue={address.complement}
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col lg="4">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-city"
+                          >
+                            Cidade
+                          </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="city"
+                            id="input-city"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={address.city}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-state"
+                          >
+                            Estado
+                          </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="state"
+                            id="input-state"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={address.state}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="4">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-postcode"
+                          >
+                            CEP
+                          </Label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-postcode"
+                            name="postcode"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={address.postcode}
                           />
                         </FormGroup>
                       </Col>
                     </Row>
                   </div>
+
                   <hr className="my-4" />
-                  {/* Address */}
-                   
-                   {
-                     client.userAddress && (
-                       <>
-                      <h6 className="heading-small text-muted mb-4">
-                      Endereço
-                    </h6>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col md="12">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-address"
-                            >
-                              Endereço
-                            </label>
-                            <Input
-                              className="form-control-alternative"
-                              id="input-address"
-                              value={client.userAddress.address}
-                              type="text"
-                              disabled={!editable}
-                            />
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col lg="4">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-city"
-                            >
-                              Cidade
-                            </label>
-                            <Input
-                              className="form-control-alternative"
-                              value={client.userAddress.city}
-                              id="input-city"
-                              placeholder="City"
-                              disabled={!editable}
-                            />
-                          </FormGroup>
-                        </Col>
-                        <Col lg="4">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-country"
-                            >
-                              Estado
-                            </label>
-                            <Input
-                              className="form-control-alternative"
-                              id="input-country"
-                              value={client.userAddress.state}
-                              type="text"
-                              disabled={!editable}
-                            />
-                          </FormGroup>
-                        </Col>
-                        <Col lg="4">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-country"
-                            >
-                              CEP
-                            </label>
-                            <Input
-                              className="form-control-alternative"
-                              id="input-postal-code"
-                              value={client.userAddress.postcode}
-                              type='text'
-                              disabled={!editable}
-                            />
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </div> 
-                    </> 
-                     )
-                   }
+                  <h6 className="heading-small text-muted mb-4">Conta bancária</h6>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col lg="2">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                          >
+                            Código do banco
+                                  </Label>
+                          <Input
+                            className="form-control-alternative"
+                            placeholder="Banco"
+                            name="codeBank"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={banks.codeBank}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="2">
+                        <FormGroup>
+                          <Label className="form-control-Label">
+                            Agência
+                                  </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="agency"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={banks.agency}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="3">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                          >
+                            Número da conta
+                                  </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="account"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={banks.account}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="2">
+                        <FormGroup>
+                          <Label className="form-control-Label">
+                            Dígito da Conta
+                                  </Label>
+                          <Input
+                            className="form-control-alternative .inputNumber"
+                            name="accountDigit"
+                            type="text"
+                            innerRef={register({ required: true })}
+                            defaultValue={banks.accountDigit}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="2">
+
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                          >
+                            Tipo da conta
+                                  </Label>
+                          <Input
+                            className="form-control-alternative"
+                            name="accountType"
+                            type="select"
+                            innerRef={register({ required: true })}
+                            defaultValue={banks.accountType}
+                          >
+                            <option value="C"  >Conta Corrente</option>
+                            <option value="P" >Conta Poupança</option>
+                          </Input>
+                        </FormGroup>
+
+                      </Col>
+
+                    </Row>
+                  </div>
 
                   <hr className="my-4" />
                   <h6 className="heading-small text-muted mb-4">Plano</h6>
                   <div className="pl-lg-4">
-
-                  <FormGroup>
-                      <label>Status da Conta</label>
-                        <Input 
-                          type="select" 
-                          name="select" 
-                          id="exampleSelect"
-                          onChange={e => setStatus(e.target.value)}
-                        >
-                          <option value={true} selected={status === true}>Ativado</option>
-                          <option value={false} selected={status === false}>Desativado</option>
-                        </Input>
-                    </FormGroup>
-
-
                     <FormGroup>
-                      <label>Plano selecionado</label>
-                        <Input 
-                          type="select" 
-                          name="select" 
-                          id="exampleSelect" 
-                          onChange={(e) => setPlanSelected(e.target.value)}>
-                          {/* <option>Monetiz Checkout</option>
-                          <option>Monetiz Pay</option> */}
-                          <option selected={planSelected === null}>Sem plano</option>
-                          {plans.map(plan => (
-                            <option value={plan.id} selected={planSelected === plan.id}>{plan.name}</option>
-                          ))}
-                        </Input>
+                      <Label>Plano selecionado</Label>
+                      <Input
+                        type="select"
+                        name="plainId"
+                        id="exampleSelect"
+                        value={client.planId}
+                        innerRef={register({ required: true })}
+                      >
+                        {plans.map(plan => (
+                          <option value={plan.id} key={plan.id}>{plan.name}</option>
+                        ))}
+                      </Input>
                     </FormGroup>
                   </div>
-                </Form>
-                )}
 
-              <Col className='d-flex justify-content-center'>
-                    <Button color="primary" className='self-align-center' type='submit' form='form'>
+                  <Col className='d-flex justify-content-center'>
+                    <Button color="primary" className='self-align-center' >
                       Confirmar
                     </Button>
-              </Col>
+                  </Col>
+                </Form>
+                  
+                )}
+
+              
               </CardBody>
 
 

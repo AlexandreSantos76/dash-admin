@@ -17,13 +17,10 @@
 */
 
 // Core
-
 @import "argon-dashboard/custom/functions";
 @import "argon-dashboard/custom/variables";
 @import "argon-dashboard/custom/mixins";
-
 // bootstrap (4.3.1) components
-
 @import "argon-dashboard/bootstrap/root";
 @import "argon-dashboard/bootstrap/reboot";
 @import "argon-dashboard/bootstrap/type";
@@ -56,19 +53,13 @@
 @import "argon-dashboard/bootstrap/carousel";
 @import "argon-dashboard/bootstrap/utilities";
 @import "argon-dashboard/bootstrap/print";
-
 // Argon utilities and components
-
 @import "argon-dashboard/custom/reboot";
 @import "argon-dashboard/custom/utilities";
 @import "argon-dashboard/custom/components";
-
 // Vendor (Plugins)
-
 @import "argon-dashboard/custom/vendors";
-
 // Docs components
-
 @import "argon-dashboard/docs/variables";
 @import "argon-dashboard/docs/nav";
 @import "argon-dashboard/docs/clipboard-js";
@@ -77,6 +68,6 @@
 @import "argon-dashboard/docs/content";
 @import "argon-dashboard/docs/sidebar";
 @import "argon-dashboard/docs/footer";
-
 // React Differences
 @import "react/react-differences";
+@import "argon-dashboard/custom/labels";

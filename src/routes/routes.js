@@ -9,13 +9,10 @@ export default function RouteWrapper({
   component: Component,
   ...rest
 }) {
-  console.log(rest);
 
   const auth = useAuth();
-
-
-  // const signed = !!auth.user;
-  const signed = true;
+  const signed = !!auth.user;
+  //const signed = true;
 
   if (!signed && isPrivate) {
     return <Redirect to="/auth/login" />;

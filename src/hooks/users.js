@@ -24,7 +24,11 @@ function UsersProvider({ children }){
 
   const userRegister = useCallback(async (data) => {
     const response = await api.post('/user/add', data);
+    return response.data;
+  })
 
+  const callbackSituation = useCallback (async (data) => {
+    const response = await api.post('/user/add', data);
     return response.data;
   })
 
