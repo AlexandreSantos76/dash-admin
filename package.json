@@ -11,7 +11,7 @@
     "scripts": {
         "start": "react-scripts start",
         "start-dev": "react-scripts start .env.development.local",
-        "build": "react-scripts build .env.production .env.development.local .env",
+        "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start",
