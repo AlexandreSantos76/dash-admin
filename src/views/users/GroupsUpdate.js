@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import Header from "views/ex/node_modules/components/Headers/Header.js.js";
+import Header from "components/Headers/Header";
 import { Button, Card, CardBody, CardFooter, CardHeader, Col, Container, CustomInput, Form, FormGroup, Input, Label, Row, Table } from 'reactstrap';
 import api from 'services/api';
 import { useParams } from 'react-router-dom';

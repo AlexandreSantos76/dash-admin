@@ -25,7 +25,7 @@ import {
 
 import { usePlans } from '../../hooks/plans'
 
-import Header from "views/ex/node_modules/components/Headers/Header.js.js";
+import Header from "components/Headers/Header.js";
 
 import api from '../../services/api';
 

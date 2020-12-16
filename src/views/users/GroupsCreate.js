@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import Header from "views/ex/node_modules/components/Headers/Header.js.js";
+import Header from "components/Headers/Header.js";
 import { Button, Card, CardBody, CardFooter, CardHeader, Col, Container, CustomInput, Form, FormGroup, Input, Label, Row, Table } from 'reactstrap';
 import api from 'services/api';
-import { Checkbox } from 'utils/Checkbox';
-import { arrayOf } from 'prop-types';
-import { Redirect, useHistory } from 'react-router-dom';
-
-
+import { useHistory } from 'react-router-dom';
 function GroupsCreate() {
     const [resources, setResources] = useState([])
     const [select, setSelect] = useState([])
