@@ -19,7 +19,7 @@ import {
   Collapse,
 } from "reactstrap";
 // core components
-import UserHeader from "components/Headers/UserHeader.js";
+import UserHeader from "components/Headers/Header";
 
 import american_express from '../../assets/img/bandeiras/american_express.png';
 import dinners_club from '../../assets/img/bandeiras/dinners_club.png';

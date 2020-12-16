@@ -3,7 +3,6 @@ import { useHistory } from 'react-router-dom'
 // reactstrap components
 import {
   Badge,
-  Button,
   Card,
   CardHeader,
   CardFooter,
@@ -11,15 +10,12 @@ import {
   DropdownItem,
   UncontrolledDropdown,
   DropdownToggle,
-  Media,
   Pagination,
   PaginationItem,
   PaginationLink,
-  Progress,
   Table,
   Container,
-  Row,
-  UncontrolledTooltip
+  Row
 } from "reactstrap";
 // core components
 import {format, parseISO} from 'date-fns'
@@ -27,7 +23,7 @@ import {format, parseISO} from 'date-fns'
 import {formatPrice} from '../../utils/format'
 import { useChargebacks } from '../../hooks/chargebacks';
 
-import Header from "components/Headers/Header.js";
+import Header from "components/Headers/Header";
 
 import api from '../../services/api';
 

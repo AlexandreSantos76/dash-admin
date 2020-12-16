@@ -20,7 +20,7 @@ import {
 } from "reactstrap";
 
 // core components
-import UserHeader from "components/Headers/UserHeader.js";
+import UserHeader from "components/Headers/Header";
 
 import { usePlans } from '../../hooks/plans'
 
@@ -75,11 +75,9 @@ function PlanMonetizPaySettings(){
   const [installmentsCreditCard, setInstallmentsCreditCard] = useState(16);
   const [installmentsCreditCardSelected, setInstallmentsCreditCardSelected] = useState(12);
 
-  const toggle = () => setCollpase(!collapse);
+  
 
   const [installmentsCreditCardArea, setInstallmentsCreditCardArea] = useState([])
-  const [installmentInputsValueMonetiz, setInstallmentInputsValueMonetiz] = useState([])
-  const [installmentInputsValueBuyer, setInstallmentInputsValueBuyer] = useState([])
   const [installmentsInputValues, setInstallmentsInputValues] = useState([]);
   const [update, setUpdate ] = useState(false);
 

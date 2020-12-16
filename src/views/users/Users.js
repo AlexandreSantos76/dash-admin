@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import Header from "components/Headers/Header.js";
+import Header from "views/ex/node_modules/components/Headers/Header.js.js";
 import { Button, Card, CardBody, CardFooter, CardHeader, Col, Container, Row, Table } from 'reactstrap';
 import BootstrapTable from 'react-bootstrap-table-next';
 import { Link } from 'react-router-dom';

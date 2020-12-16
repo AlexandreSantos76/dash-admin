@@ -1,853 +1,339 @@
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 
-// reactstrap components
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  FormGroup,
-  Form,
-  Input,
-  Container,
-  Row,
-  Col,
-  Label,
-  InputGroup,
-  InputGroupAddon,
-  Collapse,
-} from "reactstrap";
-
+import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, Row, Col, CardFooter, Table, Modal, ModalHeader, ModalBody, ModalFooter, Label, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from "reactstrap";
 import { useHistory } from 'react-router-dom'
-
+import { toast } from 'react-toastify'
 // core components
-import UserHeader from "components/Headers/UserHeader.js";
-
+import UserHeader from "components/Headers/Header";
+import Editable from "components/Plans/EditTable"
 import { usePlans } from '../../hooks/plans'
-
-import american_express from '../../assets/img/bandeiras/american_express.png';
-import dinners_club from '../../assets/img/bandeiras/dinners_club.png';
-import cabal from '../../assets/img/bandeiras/cabal.png';
-import cred_system from '../../assets/img/bandeiras/cred_system.png';
-import credz from '../../assets/img/bandeiras/credz.png';
-import hiper from '../../assets/img/bandeiras/hiper.png';
-import soro_cred from '../../assets/img/bandeiras/soro_cred.png';
+import { formatCurrency, formatPercentage } from '../../utils/FormateUtils';
+import boleto from '../../assets/img/bandeiras/boleto.svg'
+import american_express from '../../assets/img/bandeiras/american_express.svg';
 import visa from '../../assets/img/bandeiras/visa.svg';
 import hiper_card from '../../assets/img/bandeiras/hiper_card.svg';
 import master_card from '../../assets/img/bandeiras/master_card.svg';
 import elo from '../../assets/img/bandeiras/elo.svg';
 import api from "services/api";
 
-function PlanSettings(){
-
-  const { savePlans, handleGetPlanDetailsId, updatePlan, deletePlan } = usePlans();
-
-
+function PlanSettings() {
+  const { register, errors, handleSubmit } = useForm()
+  const { register: register2, handleSubmit: handleSubmitComissions } = useForm();
+  const { getPlan, handleGetPlanDetailsId, updatePlan, deletePlan } = usePlans();
   const history = useHistory();
-
   const plan_id = handleGetPlanDetailsId();
-
-
-  const [planName, setPlanName]= useState('');
-  const [statusPlan, setStatusPlan] = useState(true);
-  
+  const [plan, setPlan] = useState({})
+  const [comissions, setComissions] = useState([])
   const [collapse, setCollpase] = useState(false);
-  
-  const [taxMonetizStatus, setTaxMonetizStatus] = useState(false);
-  const [paymentMonetizTaxType, setPaymentMonetizTaxType] = useState('percentage');
-  const [taxMonetizValue, setTaxMonetizValue] = useState(0)
-  
-  const [taxBoletoStatus, setTaxBoletoStatus] = useState(false);
-  const [paymentBoletoBuyerTaxType, setPaymentBoletoBuyerTaxType] = useState('percentage');
-  const [paymentBoletoBuyerTaxValue, setPaymentBoletoBuyerTaxValue] = useState(0);
-
-  const [paymentBoletoMonetizTaxType, setPaymentBoletoMonetizTaxType] = useState('percentage');
-  const [paymentBoletoMonetizTaxValue, setPaymentBoletoMonetizTaxValue] = useState(0);
-
-  const [taxCreditCardStatus, setTaxCreditCardStatus ] = useState(false);
-  const [paymentCreditCardBuyerTaxType, setPaymentCreditCardBuyerTaxType] = useState('percentage');
-  const [paymentCreditCardBuyerTaxValue, setPaymentCreditCardBuyerTaxValue ] = useState(0);
-
-  const [paymentCreditCardMonetizTaxType, setPaymentCreditCardMonetizTaxType] = useState('percentage');
-  const [paymentCreditCardMonetizTaxValue, setPaymentCreditCardMonetizTaxValue ] = useState(0);
-
-  const [paymentAnticipationBuyerTaxType, setPaymentAnticipationBuyerTaxType] = useState('percentage');
-  const [paymentAnticipationBuyerTaxValue, setPaymentAnticipationBuyerTaxValue ] = useState(0);
-
-  const [paymentAnticipationMonetizTaxType, setPaymentAnticipationMonetizTaxType] = useState('percentage');
-  const [paymentAnticipationMonetizTaxValue, setPaymentAnticipationMonetizTaxValue ] = useState(0);
-    
-
-  const [installments, setInstallments] = useState([]);
-  const [installmentsCreditCardFields, setInstallmentsCreditCardFields] = useState([]);
-  const [installmentsCreditCard, setInstallmentsCreditCard] = useState(16);
-  const [installmentsCreditCardSelected, setInstallmentsCreditCardSelected] = useState(12);
-
-  const toggle = () => setCollpase(!collapse);
-
-  const [installmentsCreditCardArea, setInstallmentsCreditCardArea] = useState([])
-  const [installmentInputsValueMonetiz, setInstallmentInputsValueMonetiz] = useState([])
-  const [installmentInputsValueBuyer, setInstallmentInputsValueBuyer] = useState([])
-  const [installmentsInputValues, setInstallmentsInputValues] = useState([]);
-  const [update, setUpdate ] = useState(false);
-
-  
-  
-  const [creditCards, setCreditCards] = useState([
-    {
-      name: 'American Express',
-      img: american_express,
-    },
-    {
-      name: "Dinner's Club",
-      img: dinners_club
-    },
-    {
-      name: "Cabal",
-      img: cabal
-    },
-    {
-      name: "Cred System",
-      img: cred_system
-    },
-    {
-      name: "Credz",
-      img: credz
-    },
-    {
-      name: "Hiper",
-      img: hiper
-    },
-    {
-      name: "Soro Cred",
-      img: soro_cred
-    },
-    {
-      name: "Visa",
-      img: visa
-    },
-    {
-      name: "Hiper Card",
-      img: hiper_card
-    },
-    {
-      name: "Master Card",
-      img: master_card
-    },
-    {
-      name: "Elo",
-      img: elo
-    },
+  const [modal, setModal] = useState(false);
+  const [brands, setBrands] = useState([
+    { brand: `Boleto`, img: boleto, },
+    { brand: `Visa`, img: visa, },
+    { brand: `Mastercard`, img: master_card, },
+    { brand: `Amex`, img: american_express, },
+    { brand: `Elo`, img: elo, },
+    { brand: `Hipercard`, img: hiper_card, },
+  ]);
+  const [inst, setInst] = useState([
+    { value: "BOLETO", label: "Boleto" },
+    { value: "CREDITO A VISTA", label: "Crédito a Vista" },
+    { value: "PARCELADO LOJISTA 3X", label: "Parcelado Lojista 3x" },
+    { value: "PARCELADO LOJISTA 6X", label: "Parcelado Lojista 6x" },
+    { value: "PARCELADO LOJISTA 9X", label: "Parcelado Lojista 9x" },
+    { value: "PARCELADO LOJISTA 12X", label: "Parcelado Lojista 12x" },
+    { value: "PARCELADO EMISSOR", label: "Parcelado Emissor" },
   ])
+  const inputRef = useRef();
+  const toggle = () => setModal(!modal);
 
   useEffect(() => {
-    async function loadingData(){
-      const response = await api.get(`plans/show/${plan_id}`);
-
-      console.log("RESPOSTA", response.data);
-      setPlanName(response.data.name);
-      setStatusPlan(response.data.status)
-      setTaxMonetizStatus(response.data.monetiz_tax_status)
-      setPaymentMonetizTaxType(response.data.monetiz_tax_method)
-      setTaxMonetizValue(response.data.monetiz_tax)
-      setTaxBoletoStatus(response.data.boleto_tax_status)
-      setPaymentBoletoBuyerTaxType(response.data.boleto_tax_buyer_method)
-      setPaymentBoletoBuyerTaxValue(response.data.boleto_tax_buyer)
-      setPaymentBoletoMonetizTaxType(response.data.boleto_tax_monetiz_method)
-      setPaymentBoletoMonetizTaxValue(response.data.boleto_tax_monetiz)
-      setTaxCreditCardStatus(response.data.credit_card_tax_status)
-      setPaymentCreditCardBuyerTaxType(response.data.credit_card_tax_buyer_method)
-      setPaymentCreditCardBuyerTaxValue(response.data.credit_card_tax_buyer)
-      setPaymentCreditCardMonetizTaxType(response.data.credit_card_tax_monetiz_method)
-      setPaymentCreditCardMonetizTaxValue(response.data.credit_card_tax_monetiz)
-      // setPaymentAnticipationBuyerTaxType(response.data)
-      // setPaymentAnticipationBuyerTaxValue(response.data)
-      // setPaymentAnticipationMonetizTaxType(response.data)
-      // setPaymentAnticipationMonetizTaxValue(response.data)
-     
+    const loadingData = async () => {
+      let response = await getPlan(plan_id)
+      setPlan(response)
+      setComissions(response.comissions)
     }
-    loadingData();
-
-  },[plan_id])
-  useEffect(() => {
-    const auxCreditCard = creditCards.map( creditCard => ({
-      ...creditCard,
-      installmentsMonetiz: new Array( installmentsCreditCard).fill(0),
-      installmentsBuyer: new Array(installmentsCreditCard).fill(0)
-    }))
-
-    setInstallmentsInputValues(auxCreditCard);
-  }, [creditCards, installmentsCreditCard, installmentsCreditCard.length])
-
-  useEffect(() => {
-    const auxInstallments = [];
-    for(let i = 1; i <= installmentsCreditCard; i++){
-      auxInstallments.push(i);
-    }
-    setInstallments(auxInstallments);
-
-  }, [creditCards, installmentsCreditCard])
-
-  useEffect(() => {
-    const auxInstallments = [];
-    for(let i = 1; i <= installmentsCreditCardSelected; i++){
-      auxInstallments.push(i);
-    }
-
-    setInstallmentsCreditCardFields(auxInstallments);
-
-  }, [installmentsCreditCard, installmentsCreditCardSelected])
-
-  useEffect(() => {
-    const length = creditCards.length;
-
-    const auxInstallmentsCreditCardArea = [];
-
-    for(let i = 0; i < length; i ++){
-      auxInstallmentsCreditCardArea.push(false);
-    }
-
-    setUpdate( state => !state)
-
-  },[creditCards])
-
-  const handleInstallmentsArea = useCallback((index) => {
-    console.log(index);
-    const auxInstallmentsCreditCardArea = installmentsCreditCardArea;
-    auxInstallmentsCreditCardArea[index] = !auxInstallmentsCreditCardArea[index];
-
-    setInstallmentsCreditCardArea(auxInstallmentsCreditCardArea);
-
-    console.log(auxInstallmentsCreditCardArea)
-    setUpdate(state => !state);
-  }, [installmentsCreditCardArea])
-
-  const handleValueInputBuyer = useCallback((value, creditCard,index) => {
-
-    const auxInstallmentsInputValues = installmentsInputValues;
-
-    const installmentsInputValueIndex = auxInstallmentsInputValues.findIndex( item => item.name === creditCard);
-    auxInstallmentsInputValues[installmentsInputValueIndex].installmentsBuyer[index] = value;
-
-    setInstallmentsInputValues(auxInstallmentsInputValues);
-    
-    setUpdate(state => !state)
-  }, [installmentsInputValues])
+    loadingData()
+  }, [plan_id, getPlan])
 
 
-  const handleValueInputMonetiz = useCallback((value, creditCard,index) => {
-    const auxInstallmentsInputValues = installmentsInputValues;
-
-    const installmentsInputValueIndex = auxInstallmentsInputValues.findIndex( item => item.name === creditCard);
-    auxInstallmentsInputValues[installmentsInputValueIndex].installmentsMonetiz[index] = Number(value);
-
-    setInstallmentsInputValues(auxInstallmentsInputValues);
-
-    
-    setUpdate(state => !state)
-  }, [installmentsInputValues])
-
-
-  const handleResumeInstallment = useCallback((creditCard,index) => {
-    const auxInstallmentsInputValues = installmentsInputValues;
-
-    const installmentsInputValueIndex = auxInstallmentsInputValues.findIndex( item => item.name === creditCard);
-
-    return `
-      ${auxInstallmentsInputValues[installmentsInputValueIndex].installmentsBuyer[index]/100}% 
-    + ${auxInstallmentsInputValues[installmentsInputValueIndex].installmentsMonetiz[index]/100}% 
-    = ${auxInstallmentsInputValues[installmentsInputValueIndex].installmentsBuyer[index]/100 
-      + auxInstallmentsInputValues[installmentsInputValueIndex].installmentsMonetiz[index]/100}%
-    `
-
-  },[installmentsInputValues])
-
-  const handleSubmit = async(e) => {
-    e.preventDefault();
-    
-    const data = {
-      id: plan_id,
-      name: planName,
-      status: statusPlan,
-      monetiz_tax_status: taxMonetizStatus,
-      monetiz_tax_method: paymentBoletoBuyerTaxType,
-      monetiz_tax: paymentBoletoBuyerTaxValue,
-      boleto_tax_status: taxBoletoStatus,
-      boleto_tax_buyer_method: paymentBoletoBuyerTaxType,
-      boleto_tax_buyer: paymentBoletoBuyerTaxValue,
-      boleto_tax_monetiz_method: paymentBoletoMonetizTaxType,
-      boleto_tax_monetiz: paymentBoletoMonetizTaxValue,
-      credit_card_tax_status: taxCreditCardStatus,
-      credit_card_tax_buyer_method: paymentCreditCardBuyerTaxType,
-      credit_card_tax_buyer: paymentCreditCardBuyerTaxValue,
-      credit_card_tax_monetiz_method: paymentCreditCardMonetizTaxType,
-      credit_card_tax_monetiz: paymentCreditCardMonetizTaxValue,
-    }
-
-    await updatePlan(data);
-
-  };
-
-  const handleDelete = async(e) => {
+  const handleDelete = async (e) => {
     await deletePlan(plan_id)
   }
 
+  const plainSubmit = async (data) => {
+    await updatePlan(data)
+  }
+
+  const comissionSubmit = async (data) => {
+    let dataSubmit = data
+    let value = data.value
+    value = value.replace(/\D/g, "")
+    dataSubmit.planId = plan_id
+    dataSubmit.status = true
+    dataSubmit.value = parseInt(value)
+    try {
+      const response = await api.post("/plans/comissions", dataSubmit)
+      setComissions(oldArray => [...oldArray, response.data])
+      toggle()
+      toast.success("Comissões atualizado !");
+    } catch (err) {
+      console.log(err);
+      toast.error("Tente novamente !");
+    }
+  }
+
+  const updateComission = async (data, id, index) => {
+    let value = data
+    value = value.replace(/\D/g, "")
+    try {
+
+      const response = await api.put("/plans/comissions", {id:id,value:value})
+      let newArr = [...comissions];
+      newArr[index].value = value;
+      console.log(newArr);
+      setComissions(newArr)
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const deleteComission = async (id) => {
+    api.delete(`/plans/comissions/${id}`)
+    let array = await comissions.filter(el => el.id !== id)
+    setComissions(array)
+
+
+  }
   return (
     <>
       <UserHeader />
       {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
-          <Col className="order-xl-1" xl="12">
-            <Card className="bg-secondary shadow">
-              <CardHeader className="bg-white border-0">
-                <Row className="align-items-center justify-content-between">
-                  <Col xs="8">
-                      <h3 className="mb-0">{planName}</h3>
-                  </Col>
-                  <Button color='danger' outline type='button' onClick={handleDelete}> Deletar</Button>
-                </Row>
-              </CardHeader>
+          <Col>
+            <Card className="shadow">
               <CardBody>
-              <Form onSubmit={(e) => handleSubmit(e)} id='form'>
-                  <h6 className="heading-small text-muted mb-4">
-                    Informações
-                  </h6>
-                  <div className="pl-lg-4">
-                    <Row>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-username"
-                          >
-                            Nome
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            onChange={(e) => setPlanName(e.target.value)}
-                            value={planName}
-                            id="input-username"
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="12">
-                      <FormGroup className='d-flex flex-column'>
-                          <label
-                            className="form-control-label"
-                            htmlFor="input-first-name"
-                          >
-                            Status
-                          </label>
-                          <FormGroup className='d-flex flex-column'>
-                            <Label onClick={() => setStatusPlan(true)}>
-                              <Input type='radio' name='statusPlan' checked={statusPlan}/>
-                                Ativo
-                            </Label>
-
-                            <Label onClick={() => setStatusPlan(false)}>
-                              <Input type='radio' name='statusPlan' checked={!statusPlan}/>
-                                Inativo
-                            </Label>
-
-                          </FormGroup>
-                        </FormGroup>
-                      </Col>
-                    </Row>
-
-                  <h6 className="heading-small text-muted mb-4">
-                    Taxas
-                  </h6>
-
-                  <Card style={{padding: '40px 40px 0 40px', marginBottom: '20px', backgroundColor: '#f8f8f8'}}> 
-                  
-                    <Row >
-                      <Col lg="6">
-                        <FormGroup className='d-flex flex-column'>
-                          {/* <label
-                            className="form-control-label"
-                            htmlFor="input-first-name"
-                          >
-                            Monetiz
-                          </label> */}
-                          <CardHeader>
-                            Monetiz
-                          </CardHeader>
-                          <FormGroup className='d-flex flex-column'>
-                            <Label onClick={() => setTaxMonetizStatus(true)}>
-                              <Input type='radio' name='taxMonetizStatus' checked={taxMonetizStatus}/>
-                                Ativo
-                            </Label>
-
-                            <Label onClick={() => setTaxMonetizStatus(false)}>
-                              <Input type='radio' name='taxMonetizStatus' checked={!taxMonetizStatus}/>
-                                Inativo
-                            </Label>
-
-                          </FormGroup>
-                        </FormGroup>
-                      </Col>
-                    </Row>
-
-                      <Collapse isOpen={taxMonetizStatus}>
-                       <CardBody>
+                <Row className="justify-content-center">
+                  <Col xs="12" md="9">
+                    <Card className="border-0">
+                      <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
+                        <h3 className="mb-0">Planos</h3>
+                      </CardHeader>
+                      <CardBody>
                         <Row>
-                          <Col lg="6">
-                            <FormGroup className='d-flex flex-column'>
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-first-name"
-                              >
-                                Tipo de taxa Monetiz
-                              </label>
-                              <FormGroup className='d-flex flex-column'>
-                                <Label onClick={() => setPaymentMonetizTaxType('percentage')}>
-                                  <Input type='radio' name='paymentMonetizTaxType' checked={ paymentMonetizTaxType === 'percentage'}/>
-                                    Porcentagem (%)
-                                </Label>
-
-                                <Label onClick={() => setPaymentMonetizTaxType('fixed')}>
-                                  <Input type='radio' name='paymentMonetizTaxType' checked={ paymentMonetizTaxType === 'fixed'}/>
-                                    Fixa (R$)
-                                </Label>
-
-                              </FormGroup>
-                            </FormGroup>
+                          <Col sm="3">
+                            <h2>Planos</h2>
+                            <p>
+                              Gerencie os planos ativos
+                              e defina comissões e planos personalizados.
+                            </p>
                           </Col>
+                          <Col sm="9">
+                            <Card className="bg-secondary shadow">
+                              <CardHeader className="bg-white border-0">
+                                <Row className="align-items-center justify-content-between">
+                                  <Col xs="8">
+                                    <h3 className="mb-0">{plan?.name}</h3>
+                                  </Col>
+                                  <Button color='danger' outline type='button' onClick={handleDelete}> Deletar</Button>
+                                </Row>
+                              </CardHeader>
+                              <CardBody>
+                                <Form onSubmit={handleSubmit(plainSubmit)} id='form'>
+                                  <Input type="hidden" name="id" value={plan_id} innerRef={register} />
+                                  <Row>
+                                    <Col>
+                                      <h6 className="heading-small text-muted mb-4">Informações</h6>
+                                      <FormGroup>
+                                        <label className="form-control-label" htmlFor="input-name">
+                                          Nome
+                                          </label>
+                                        <Input
+                                          className="form-control-alternative"
+                                          id="input-name"
+                                          type="text"
+                                          name="name"
+                                          innerRef={register}
+                                          defaultValue={plan?.name}
+                                        />
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <Row>
+                                    <Col md="6">
+                                      <label className="form-control-label">
+                                        Status
+                                      </label>
+                                      <div className="d-flex mt-3">
 
-                          <Col lg="6">
-                            <FormGroup>
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-last-name"
-                              >
-                                Valor
-                              </label>
-                              <InputGroup>
-                                <InputGroupAddon addonType="prepend">{paymentMonetizTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                <Input placeholder="Valor" value={taxMonetizValue} min={0} max={100} type="text" step="1" onChange={(e) => setTaxMonetizValue(e.target.value)}/>
-                              </InputGroup>
-                            </FormGroup>
+                                        <FormGroup>
+                                          <label className="custom-toggle">
+                                            <Input name="status" defaultChecked={plan?.status} type="checkbox" innerRef={register} />
+                                            <span className="custom-toggle-slider rounded-circle" />
+                                          </label>
+                                        </FormGroup>
+                                        <span className="pl-1">Ativar Plano</span>
+                                      </div>
+                                    </Col>
+                                    <Col md="6">
+                                      <label className="form-control-label">
+                                        Tipo
+                                        </label>
+                                      <FormGroup>
+                                        <Input type="select" name="type" innerRef={register} value={plan?.type} onChange={e => { setPlan({ ...plan, type: e.target.value }) }}>
+                                          <option value="PUBLIC">Público</option>
+                                          <option value="EXCLUSIVE">Personalizado</option>
+                                        </Input>
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+
+                                  <Row>
+
+                                    <Col className='d-flex justify-content-center'>
+                                      <Button color="primary" className='self-align-center' type='submit' form='form'>
+                                        Confirmar
+                                      </Button>
+                                    </Col>
+                                  </Row>
+                                </Form>
+                              </CardBody>
+                            </Card>
+
+                            <Card className="bg-secondary shadow mt-3">
+                              <CardHeader className="bg-white border-0" >
+                                <Row className="align-items-center justify-content-between">
+                                  <Col xs="8">
+                                    <h3 className="mb-0">Comissões e Taxas</h3>
+                                  </Col>
+                                  <Button color='danger' outline type='button' onClick={toggle}> Adicionar</Button>
+                                </Row>
+
+                              </CardHeader>
+                              <CardBody>
+                                <Table className="align-items-center" >
+                                  <thead className="thead-light">
+                                    <tr>
+                                      <th></th>
+                                      <th>Nome</th>
+                                      <th>Tipo</th>
+                                      <th>Valor</th>
+                                      <th>Ações</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {comissions?.map((value, key) => {
+                                      let brand = brands.filter(o => o.brand === value.brand)
+                                      return (
+                                        <tr key={value.id}>
+                                          <td><img src={brand[0].img} alt={brand[0].brand} style={{ maxWidth: "30px" }} /></td>
+                                          <td>{value.name}</td>
+                                          <td className="text-center">{value.type === "percentage" ? "%" : "R$"}</td>
+                                          <td>
+                                            <Editable
+                                              text={value.type === "percentage" ? formatPercentage(value.value / 100) : formatCurrency(value.value)}
+                                              placeholder="Write a task name"
+                                              childRef={inputRef}
+                                              type="input"
+                                            >
+                                              <input
+                                                ref={inputRef}
+                                                type="text"
+                                                name="task"
+                                                placeholder="Write a task name"
+                                                defaultValue={value.type === "percentage" ? formatPercentage(value.value / 100) : formatCurrency(value.value)}
+                                                onBlur={e => updateComission(e.target.value, value.id, key)}
+                                              />
+                                            </Editable>
+                                            
+                                          </td>
+                                          <td>
+                                            <UncontrolledDropdown>
+                                              <DropdownToggle
+                                                className="btn-icon-only text-light"
+                                                href="#pablo"
+                                                role="button"
+                                                size="sm"
+                                                color=""
+                                                onClick={e => e.preventDefault()}
+                                              >
+                                                <i className="fas fa-ellipsis-v" />
+                                              </DropdownToggle>
+                                              <DropdownMenu className="dropdown-menu-arrow" right>                                                
+                                                <DropdownItem href="#pablo">
+                                                  <Button size="sm" color="danger" onClick={e => { e.preventDefault(); deleteComission(value.id) }}>Deletar</Button>
+                                                </DropdownItem>
+                                              </DropdownMenu>
+                                            </UncontrolledDropdown>
+                                          </td>
+                                        </tr>
+                                      )
+                                    }
+                                    )}
+                                  </tbody>
+                                </Table>
+                              </CardBody>
+                              <CardFooter>
+                              </CardFooter>
+                            </Card>
                           </Col>
                         </Row>
-                        </CardBody>
-                      </Collapse>
-
+                      </CardBody>
                     </Card>
-
-                    <Card style={{padding: '40px 40px 0 40px', marginBottom: '20px', backgroundColor: '#f8f8f8'}}>
-                    <Row>
-                      <Col lg="6">
-                        <FormGroup className='d-flex flex-column'>
-                          <CardHeader>
-                            Boleto
-                          </CardHeader>
-                            <FormGroup className='d-flex flex-column'>
-                              <Label onClick={() => setTaxBoletoStatus(true)}>
-                                <Input type='radio' name='taxBoletoStatus' checked={taxBoletoStatus}/>
-                                  Ativo
-                              </Label>
-
-                              <Label onClick={() => setTaxBoletoStatus(false)}>
-                                <Input type='radio' name='taxBoletoStatus' checked={!taxBoletoStatus}/>
-                                  Inativo
-                              </Label>
-
-                            </FormGroup>
-                        </FormGroup>
-                      </Col>
-                    </Row>
-
-                      <Collapse isOpen={taxBoletoStatus}>
-                        <CardBody>
-                          <Row>
-                            <Col lg="6">
-                              <FormGroup className='d-flex flex-column'>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-first-name"
-                                >
-                                  Tipo de taxa no Boleto (Adquirente)
-                                </label>
-                                  <FormGroup className='d-flex flex-column'>
-                                    <Label onClick={() => setPaymentBoletoBuyerTaxType('percentage')}>
-                                      <Input type='radio' name='paymentBoletoBuyerTaxType' checked={ paymentBoletoBuyerTaxType === 'percentage'}/>
-                                        Porcentagem (%)
-                                    </Label>
-
-                                    <Label onClick={() => setPaymentBoletoBuyerTaxType('fixed')}>
-                                      <Input type='radio' name='paymentBoletoBuyerTaxType' checked={ paymentBoletoBuyerTaxType === 'fixed'}/>
-                                        Fixa (R$)
-                                    </Label>
-
-                                </FormGroup>
-                              </FormGroup>
-                            </Col>
-
-                            <Col lg="6">
-                              <FormGroup>
-                              <label
-                                className="form-control-label"
-                                htmlFor="input-last-name"
-                              >
-                                Valor
-                              </label>
-                              <InputGroup>
-                                <InputGroupAddon addonType="prepend">{paymentBoletoBuyerTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                <Input placeholder="Valor" value={paymentBoletoBuyerTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentBoletoBuyerTaxValue(e.target.value)} />
-                              </InputGroup>
-                            </FormGroup>
-                            </Col>
-                          </Row>
-
-                          <Row>
-                            <Col lg="6">
-                              <FormGroup className='d-flex flex-column'>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-first-name"
-                                >
-                                  Tipo de taxa no Boleto (Monetiz)
-                                </label>
-                                <FormGroup className='d-flex flex-column'>
-                                  <Label onClick={() => setPaymentBoletoMonetizTaxType('percentage')}>
-                                    <Input type='radio' name='paymentBoletoMonetizTaxType' checked={ paymentBoletoMonetizTaxType === 'percentage'}/>
-                                      Porcentagem (%)
-                                  </Label>
-
-                                  <Label onClick={() => setPaymentBoletoMonetizTaxType('fixed')}>
-                                    <Input type='radio' name='paymentBoletoMonetizTaxType' checked={ paymentBoletoMonetizTaxType === 'fixed'}/>
-                                      Fixa (R$)
-                                  </Label>
-
-                                </FormGroup>
-                              </FormGroup>
-                            </Col>
-
-                            <Col lg="6">
-                              <FormGroup>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-last-name"
-                                >
-                                  Valor
-                                </label>
-                                <InputGroup>
-                                  <InputGroupAddon addonType="prepend">{paymentBoletoMonetizTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" value={paymentBoletoMonetizTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentBoletoMonetizTaxValue(e.target.value)}/>
-                                </InputGroup>
-                              </FormGroup>
-                            </Col>
-                          </Row>
-                        </CardBody>
-                        
-                      </Collapse>
-                    </Card>
-
-                    <Card style={{padding: '40px 40px 0 40px', marginBottom: '20px', backgroundColor: '#f8f8f8'}}>
-                      <Row>
-                        <Col lg="6">
-                          <FormGroup className='d-flex flex-column'>
-                            <CardHeader>Cartão de Crédito</CardHeader>
-                              <FormGroup className='d-flex flex-column'>
-                              <Label onClick={() => setTaxCreditCardStatus(true)}>
-                                <Input type='radio' name='taxCreditCard' checked={taxCreditCardStatus}/>
-                                  Ativo
-                              </Label>
-
-                              <Label onClick={() => setTaxCreditCardStatus(false)}>
-                                <Input type='radio' name='taxCreditCard' checked={!taxCreditCardStatus}/>
-                                  Inativo
-                              </Label>
-
-                            </FormGroup>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-
-                      <Collapse isOpen={taxCreditCardStatus}>
-                        <CardBody>
-
-                          <Row>
-                            <Col lg="6">
-                              <FormGroup className='d-flex flex-column'>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-first-name"
-                                >
-                                  Tipo de taxa no Cartão de Crédito à vista (Adquirente)
-                                </label>
-                                <FormGroup className='d-flex flex-column'>
-                                  <Label onClick={() => setPaymentCreditCardBuyerTaxType('percentage')}>
-                                    <Input type='radio' name='paymentCreditCardBuyerTaxType' checked={ paymentCreditCardBuyerTaxType === 'percentage'}/>
-                                      Porcentagem (%)
-                                  </Label>
-
-                                  <Label onClick={() => setPaymentCreditCardBuyerTaxType('fixed')}>
-                                    <Input type='radio' name='paymentCreditCardBuyerTaxType' checked={ paymentCreditCardBuyerTaxType === 'fixed'}/>
-                                      Fixa (R$)
-                                  </Label>
-
-                                </FormGroup>
-                              </FormGroup>
-                            </Col>
-                            
-
-
-                            <Col lg="6">
-                              <FormGroup>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-last-name"
-                                >
-                                  Valor
-                                </label>
-                                <InputGroup>
-                                  <InputGroupAddon addonType="prepend">{paymentCreditCardBuyerTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" value={paymentCreditCardBuyerTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentCreditCardBuyerTaxValue(e.target.value)}/>
-                                </InputGroup>
-                              </FormGroup>
-                            </Col>
-                          </Row>
-
-                          <Row>
-                            <Col lg="6">
-                              <FormGroup className='d-flex flex-column'>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-first-name"
-                                >
-                                  Tipo de taxa no Cartão de Crédito à vista (Monetiz)
-                                </label>
-                                <FormGroup className='d-flex flex-column'>
-                                  <Label onClick={() => setPaymentCreditCardMonetizTaxType('percentage')}>
-                                    <Input type='radio' name='paymentCreditCardMonetizTaxType' checked={ paymentCreditCardMonetizTaxType === 'percentage'}/>
-                                      Porcentagem (%)
-                                  </Label>
-
-                                  <Label onClick={() => setPaymentCreditCardMonetizTaxType('fixed')}>
-                                    <Input type='radio' name='paymentCreditCardMonetizTaxType' checked={ paymentCreditCardMonetizTaxType === 'fixed'}/>
-                                      Fixa (R$)
-                                  </Label>
-
-                                </FormGroup>
-                              </FormGroup>
-                            </Col>
-                            
-
-                            <Col lg="6">
-                              <FormGroup>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-last-name"
-                                >
-                                  Valor
-                                </label>
-                                <InputGroup>
-                                  <InputGroupAddon addonType="prepend">{paymentCreditCardMonetizTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" value={paymentCreditCardMonetizTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentCreditCardMonetizTaxValue(e.target.value)}/>
-                                </InputGroup>
-                              </FormGroup>
-                            </Col>
-                          </Row>
-
-                          <Row>
-                            <Col lg="6">
-                              <FormGroup className='d-flex flex-column'>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-first-name"
-                                >
-                                  Cartão de Crédito
-                                </label>
-
-                                <FormGroup>
-                                  <Label for="exampleSelect">Número de parcelas limite</Label>
-                                  <Input type="select" name="select" id="exampleSelect" onChange={(e) => setInstallmentsCreditCardSelected(e.target.value)}>
-                                    {
-                                      installments.map(item => (
-                                        <option key={item} value={item} selected>{item}</option>
-                                      ))
-                                    }
-                                  </Input>
-                                </FormGroup>
-
-                              </FormGroup>
-                            </Col>
-
-                          </Row>
-
-                        </CardBody>
-
-                      </Collapse>
-
-                    {
-                      taxCreditCardStatus && creditCards.map((creditCard, index) => (
-                        <>
-                          <Row>
-                            <Col lg='4' style={{margin:'5px 0'}}>
-                              <Button 
-                                color = 'primary'
-                                className='mb-2'
-                                onClick={() => handleInstallmentsArea(index)}
-                                style={{width: '300px', display: 'flex', alignItems: 'center'}}
-                                
-                              >
-                                <img style={{width: '60px'}}src={creditCard.img}/>
-
-                                {creditCard.name}
-                              </Button>
-                            </Col>
-                          </Row>
-
-                          <Collapse isOpen={installmentsCreditCardArea[index]}>
-          
-                              <Col lg='12' >
-                                {installmentsCreditCardFields.map((item, index) => (
-                                  <>
-                                  <Col className='d-flex align-items-center' style={{margin: 0}}>
-                                  <Col lg='6'>
-                                    <FormGroup>
-                                      <label
-                                        className="form-control-label"
-                                        htmlFor="input-last-name"
-                                      >
-                                      {`${item} Parcela (ADQUIRENTE)`}
-                                      </label>
-                                      <InputGroup>
-                                        <InputGroupAddon addonType="prepend">%</InputGroupAddon>
-                                        <Input placeholder="Valor" type="text" placeholder='0,00' onChange={(e) => handleValueInputBuyer(e.target.value, creditCard.name, index)}/>
-                                      </InputGroup>
-                                    </FormGroup>
-                                  </Col>
-
-                                    <Col lg='6'>
-                                    <FormGroup>
-                                      <label
-                                        className="form-control-label"
-                                        htmlFor="input-last-name"
-                                      >
-                                      {`${item} Parcela (MONETIZ)`}
-                                      </label>
-                                      <InputGroup>
-                                        <InputGroupAddon addonType="prepend">%</InputGroupAddon>
-                                        <Input placeholder="Valor" type="text" placeholder='0' onChange={(e) => handleValueInputMonetiz(e.target.value, creditCard.name ,index)}/>
-                                      </InputGroup>
-                                    </FormGroup>
-                                    </Col>
-                                  </Col>
-                                      <Row style={{marginTop: '-20px', display:'flex', justifyContent: 'center'}}>
-                                        <small style={{marginBottom: '20px'}}>{`Resumo: ${handleResumeInstallment(creditCard.name, index)}`}</small>
-                                      </Row>
-                                  </>
-                                ))} 
-                    
-                            </Col>
-
-                            
-                          </Collapse>
-                        </>
-                      ))
-                    }
-
-<Row>
-                            <Col lg="6">
-                              <FormGroup className='d-flex flex-column'>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-first-name"
-                                >
-                                  Tipo de taxa de Antecipação do Cartão de Crédito (Adquirente)
-                                </label>
-                                <FormGroup className='d-flex flex-column'>
-                                  <Label onClick={() => setPaymentAnticipationBuyerTaxType('percentage')}>
-                                    <Input type='radio' name='paymentAnticipationBuyerTaxType' checked={ paymentAnticipationBuyerTaxType === 'percentage'}/>
-                                      Porcentagem (%)
-                                  </Label>
-
-                                  <Label onClick={() => setPaymentAnticipationBuyerTaxType('fixed')}>
-                                    <Input type='radio' name='paymentAnticipationBuyerTaxType' checked={ paymentAnticipationBuyerTaxType === 'fixed'}/>
-                                      Fixa (R$)
-                                  </Label>
-
-                                </FormGroup>
-                              </FormGroup>
-                            </Col>
-                            
-
-
-                            <Col lg="6">
-                              <FormGroup>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-last-name"
-                                >
-                                  Valor
-                                </label>
-                                <InputGroup>
-                                  <InputGroupAddon addonType="prepend">{paymentAnticipationBuyerTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" value={paymentAnticipationBuyerTaxValue} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentAnticipationBuyerTaxValue(e.target.value)}/>
-                                </InputGroup>
-                              </FormGroup>
-                            </Col>
-                          </Row>
-
-                          <Row>
-                            <Col lg="6">
-                              <FormGroup className='d-flex flex-column'>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-first-name"
-                                >
-                                  Tipo de taxa de Antecipação do Cartão de Crédito (Monetiz)
-                                </label>
-                                <FormGroup className='d-flex flex-column'>
-                                  <Label onClick={() => setPaymentAnticipationMonetizTaxType('percentage')}>
-                                    <Input type='radio' name='paymentAnticipationMonetizTaxType' checked={ paymentAnticipationMonetizTaxType === 'percentage'}/>
-                                      Porcentagem (%)
-                                  </Label>
-
-                                  <Label onClick={() => setPaymentAnticipationMonetizTaxType('fixed')}>
-                                    <Input type='radio' name='paymentAnticipationMonetizTaxType' checked={ paymentAnticipationMonetizTaxType === 'fixed'}/>
-                                      Fixa (R$)
-                                  </Label>
-
-                                </FormGroup>
-                              </FormGroup>
-                            </Col>
-                            
-
-                            <Col lg="6">
-                              <FormGroup>
-                                <label
-                                  className="form-control-label"
-                                  htmlFor="input-last-name"
-                                >
-                                  Valor
-                                </label>
-                                <InputGroup>
-                                  <InputGroupAddon addonType="prepend">{paymentAnticipationMonetizTaxType === 'percentage' ? '%' : 'R$'}</InputGroupAddon>
-                                  <Input placeholder="Valor" value={[paymentAnticipationMonetizTaxValue]} min={0} max={100} type="text" step="1" onChange={(e) => setPaymentAnticipationMonetizTaxValue(e.target.value)}/>
-                                </InputGroup>
-                              </FormGroup>
-                            </Col>
-                          </Row>
-                    </Card>
-                  </div>
-                  <Col className='d-flex justify-content-center'>
-                    <Button color="primary" className='self-align-center' type='submit' form='form'>
-                      Confirmar
-                    </Button>
                   </Col>
-
-                </Form>
+                </Row>
               </CardBody>
             </Card>
           </Col>
         </Row>
       </Container>
+      <Modal isOpen={modal} toggle={toggle} >
+        <ModalHeader toggle={toggle} >Taxa e Comissão</ModalHeader>
+        <Form onSubmit={handleSubmitComissions(comissionSubmit)}>
+          <ModalBody>
+            <Row>
+              <Col md="6">
+                <FormGroup>
+                  <Label>Bandeira</Label>
+                  <Input type="select" name="brand" innerRef={register2} >
+                    {brands.map((value, index) => (<option key={index}>{value.brand}</option>))}
+                  </Input>
+                </FormGroup>
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <Label>Nome</Label>
+                  <Input type="select" name="name" innerRef={register2}>
+                    {inst.map((value, key) => (<option key={key} value={value.value}>{value.label}</option>))}
+                  </Input>
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col md="6">
+                <FormGroup>
+                  <Label>Tipo de Taxa</Label>
+                  <Input type="select" name="type" innerRef={register2} >
+                    <option value="percentage">Porcentagem</option>
+                    <option value="fixed">Valor Fixo</option>
+                  </Input>
+                </FormGroup>
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <Label>Valor</Label>
+                  <Input type="text" name="value" innerRef={register2} />
+                </FormGroup>
+              </Col>
+            </Row>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" type="submit">Salvar</Button>
+          </ModalFooter>
+        </Form>
+      </Modal>
     </>
   );
 }

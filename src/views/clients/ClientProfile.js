@@ -25,7 +25,7 @@ import { useUsers } from '../../hooks/users';
 import { useForm } from "react-hook-form"
 
 // core components
-import UserHeader from "components/Headers/UserHeader.js";
+import UserHeader from "components/Headers/Header";
 import api from "services/api";
 
 function ClientProfile(){

@@ -28,7 +28,7 @@ import {
 import { useUsers } from '../../hooks/users'
 import { useGateway } from '../../hooks/getnet'
 
-import Header from "components/Headers/Header.js";
+import Header from "views/ex/node_modules/components/Headers/Header.js.js";
 
 import api from '../../services/api';
 

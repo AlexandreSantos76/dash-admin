@@ -19,7 +19,7 @@ import {
   Collapse,
 } from "reactstrap";
 // core components
-import UserHeader from "components/Headers/UserHeader.js";
+import UserHeader from "components/Headers/Header";
 
 import { usePlans } from '../../hooks/plans'
 

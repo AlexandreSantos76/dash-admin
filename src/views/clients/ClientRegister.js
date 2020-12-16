@@ -1,23 +1,53 @@
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 // reactstrap components
-import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, Row, Col, Label } from "reactstrap";
+import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, Row, Col, Label, UncontrolledTooltip } from "reactstrap";
 // core components
 
 import { usePlans } from '../../hooks/plans';
 
-import UserHeader from "components/Headers/UserHeader.js";
+import UserHeader from "components/Headers/Header";
 import { cpf as validaCpf, cnpj as validaCnpj } from 'cpf-cnpj-validator';
 import { useForm } from "react-hook-form"
-import {userRegister} from "hooks/users"
+import bancos from "bancos-brasileiros"
+import { cpfMask, cnpjMask, cepMask, phoneMask } from "utils/masks"
+import * as Yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import api from "services/api"
 
-
+const schemaPersonData = Yup.object().shape({
+  legalName: Yup.string().required("Nome é um campo obrigatório.").min(8),
+  email: Yup.string().email("Exemplo: exemplo@monetiz.com.br").required("E-mail é um campo obrigatório."),
+  document: Yup.string().test('Valida Documento', 'Documento Inválido', value => {
+    let v = value.replace(/\D/g, "")
+    console.log(v.length);
+    if (v.length === 11) {
+      return validaCpf.isValid(value)
+    } else if (v.length === 14) {
+      return validaCnpj.isValid(value)
+    }
+    else {
+      return false
+    }
+  }),
+  mobile: Yup.string().min(11, "Digite no formato (99)99999-9999").required("Telefone é um campo obrigatório."),
+  postcode: Yup.string().min(8, "Digite no formato 55555555 ou 55555-555")
+    .required("CEP é um campo obrigatório."),
+  address: Yup.string().required("Rua é um campo obrigatório."),
+  number: Yup.string().required("Número é um campo obrigatório."),
+  neighborhood: Yup.string().required("Bairro é um campo obrigatório."),
+  agency: Yup.string().matches(/^[0-9]*$/, "Digite somente números").required("Agência é um campo obrigatório."),
+  account: Yup.string().matches(/^[0-9]*$/, "Digite somente números").required("Conta é um campo obrigatório."),
+  accountDigit: Yup.string().matches(/^[0-9]*$/, "Digite somente números").required("Dígito da conta é um campo obrigatório.").max(1, "Digito inválido")
+});
 function ClientRegister() {
 
   const { getPlans } = usePlans();
-  const { register, handleSubmit, watch, errors } = useForm();
-
+  const { register, handleSubmit, errors } = useForm({ resolver: yupResolver(schemaPersonData) });
+  const [postcode, setPostcode] = useState('')
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
   const [isCpf, setIsCpf] = useState(false);
   const [plans, setPlans] = useState([]);
 
@@ -33,26 +63,51 @@ function ClientRegister() {
   }, [getPlans]);
 
   const onSubmit = async data => {
-    console.log(data)
-    let { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, address, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
-    let userData = { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email }
+    let { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email,planId, address, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
+    let userData = { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, type: isCpf ? "pf" : "pj",planId }
     let addresses = { name: "Bussines Address", address, number, neighborhood, city, state, postcode, complement }
     let bankAccounts = {
       type_accounts: "unique",
       unique_account: { codeBank, agency, account, accountType, accountDigit }
     }
+    userData.mobile = userData.mobile.replace(/\D/g, "")
+    userData.document = userData.document.replace(/\D/g, "")
+    userData.stateFiscalDocument = userData.stateFiscalDocument.replace(/\D/g, "")
+    userData.phone = userData.phone.replace(/\D/g, "")
+    addresses.postcode = addresses.postcode.replace(/\D/g, "")
     let dataSubmit = {
       user: userData,
       mailingAddressEquals: "S",
-      addresses: [address],
+      addresses: [addresses],
       bankAccounts: bankAccounts,
       accepted_contract: "S",
       liability_chargeback: "S",
       marketplace_store: "N",
       payment_plan: 3
     }
-    //result = userRegister(dataSubmit)
+    api.post("/user/add", dataSubmit)
+      .then((result) => {
+        console.log(result.data)
+      }).catch((err) => {
+        console.log(err)
+      });
+
   }
+  useEffect(() => {
+    let str = postcode.replace(/[^\d]+/g, '')
+    if (str.length >= 8) {
+      fetch(`https://brasilapi.com.br/api/cep/v1/${postcode}`)
+        .then(async response => {
+          let rs = await response.json();
+          if (response.ok) {
+            setCity(rs.city);
+            setState(rs.state);
+          }
+        })
+    }
+  }, [postcode])
+
+  console.log(errors);
 
   return (
     <>
@@ -74,7 +129,6 @@ function ClientRegister() {
                 <Form onSubmit={handleSubmit(onSubmit)}>
                   <Row>
                     <Col>
-
                       <Row>
                         <Col className="mb-3 ">
                           <div className="d-flex pl-lg-4">
@@ -91,7 +145,6 @@ function ClientRegister() {
                       </Row>
                     </Col>
                   </Row>
-
                   <h6 className="heading-small text-muted mb-4">
                     Informações
                   </h6>
@@ -101,10 +154,11 @@ function ClientRegister() {
                         <FormGroup>
                           <Label className="form-control-Label" for="input-name">{isCpf ? "Nome" : "Razão Social"}</Label>
                           <Input
-                            className="form-control-alternative"
+
                             name="legalName"
                             id="input-name"
                             type="text"
+                            invalid={errors.legalName ? true : false}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -113,11 +167,12 @@ function ClientRegister() {
                         <FormGroup>
                           <Label className="form-control-Label" for='input-email'>Email</Label>
                           <Input
-                            className="form-control-alternative"
+
                             id="input-email"
                             placeholder="exemplo@monetiz.com.br"
                             name="email"
                             type="email"
+                            invalid={errors.email ? true : false}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -130,10 +185,15 @@ function ClientRegister() {
                             Celular
                                 </Label>
                           <Input
-                            className="form-control-alternative"
+
                             id="input-mobile"
                             name="mobile"
                             type="text"
+                            onChange={e => {
+                              const { value } = e.target
+                              e.target.value = phoneMask(value)
+                            }}
+                            invalid={errors.mobile ? true : false}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -144,14 +204,17 @@ function ClientRegister() {
                             Telefone Comercial
                                 </Label>
                           <Input
-                            className="form-control-alternative"
+
                             id="input-phone"
                             name="phone"
+                            onChange={e => {
+                              const { value } = e.target
+                              e.target.value = phoneMask(value)
+                            }}
                             type="text"
                             innerRef={register({ required: false })}
                           />
                         </FormGroup>
-
                       </Col>
                     </Row>
                     {
@@ -162,10 +225,14 @@ function ClientRegister() {
                               <FormGroup>
                                 <Label className="form-control-Label" for="input-cpf">CPF</Label>
                                 <Input
-                                  className="form-control-alternative"
+
                                   id="input-cpf"
                                   name="document"
                                   type="text"
+                                  onChange={e => {
+                                    const { value } = e.target
+                                    e.target.value = cepMask(value)
+                                  }}
                                   innerRef={register({ required: true })}
                                 />
                               </FormGroup>
@@ -176,7 +243,7 @@ function ClientRegister() {
                                   Ocupação/Profissão
                                 </Label>
                                 <Input
-                                  className="form-control-alternative"
+
                                   id="input-occupation"
                                   name="occupation"
                                   type="text"
@@ -185,7 +252,6 @@ function ClientRegister() {
                               </FormGroup>
                             </Col>
                           </Row>
-
                           <Row>
                             <Col lg="6">
                               <FormGroup>
@@ -193,7 +259,7 @@ function ClientRegister() {
                                   Nome da Mãe
                                 </Label>
                                 <Input
-                                  className="form-control-alternative"
+
                                   name="mothername"
                                   id="input-mothersName"
                                   type="text"
@@ -207,22 +273,19 @@ function ClientRegister() {
                                   Data de nascimento
                                 </Label>
                                 <Input
-                                  className="form-control-alternative"
+
                                   defaultValue=""
                                   id="input-birthday"
                                   name="birthdate"
                                   type="date"
                                   innerRef={register({ required: true })}
                                 />
-
                               </FormGroup>
                             </Col>
                           </Row>
-
                         </>
                       )
                     }
-
                     {
                       !isCpf && (
                         <>
@@ -236,17 +299,21 @@ function ClientRegister() {
                                   CNPJ
                               </Label>
                                 <Input
-                                  className="form-control-alternative"
+
                                   name="document"
                                   id="input-cnpj"
                                   type="text"
+                                  onChange={e => {
+                                    const { value } = e.target
+                                    e.target.value = cnpjMask(value)
+                                  }}
+                                  invalid={errors.document ? true : false}
                                   innerRef={register({ required: true })}
                                 />
                               </FormGroup>
                             </Col>
                             <Col lg="6">
                               <FormGroup>
-
                                 <Label
                                   className="form-control-Label"
                                   for="input-state-fiscal"
@@ -254,7 +321,6 @@ function ClientRegister() {
                                   Inscrição estadual
                               </Label>
                                 <Input
-                                  className="form-control-alternative"
                                   id="input-state-fiscal"
                                   name="stateFiscalDocument"
                                   innerRef={register({ required: true })}
@@ -263,12 +329,9 @@ function ClientRegister() {
                               </FormGroup>
                             </Col>
                           </Row>
-
                           <Row>
-
                             <Col lg="6">
                               <FormGroup>
-
                                 <Label
                                   className="form-control-Label"
                                   for="input-tradename"
@@ -276,7 +339,6 @@ function ClientRegister() {
                                   Nome fantasia
                                 </Label>
                                 <Input
-                                  className="form-control-alternative"
                                   id="input-tradename"
                                   name="tradeName"
                                   innerRef={register({ required: true })}
@@ -289,17 +351,37 @@ function ClientRegister() {
                         </>
                       )
                     }
-
                   </div>
                   <hr className="my-4" />
                   {/* Address */}
                   <h6 className="heading-small text-muted mb-4">
                     Endereço
                   </h6>
-
                   <div className="pl-lg-4">
                     <Row>
-                      <Col md="12">
+                      <Col lg="4">
+                        <FormGroup>
+                          <Label
+                            className="form-control-Label"
+                            for="input-postcode"
+                          >
+                            CEP
+                          </Label>
+                          <Input
+                            id="input-postcode"
+                            name="postcode"
+                            onChange={e => {
+                              const { value } = e.target
+                              setPostcode(value)
+                              e.target.value = cepMask(value)
+                            }}
+                            type="text"
+                            invalid={errors.postcode ? true : false}
+                            innerRef={register({ required: true })}
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col md="8">
                         <FormGroup>
                           <Label
                             className="form-control-Label"
@@ -308,7 +390,7 @@ function ClientRegister() {
                             Endereço
                           </Label>
                           <Input
-                            className="form-control-alternative"
+                            invalid={errors.address ? true : false}
                             name="address"
                             id="input-address"
                             type="text"
@@ -318,7 +400,6 @@ function ClientRegister() {
                       </Col>
                     </Row>
                     <Row>
-
                       <Col lg="4">
                         <FormGroup>
                           <Label
@@ -328,7 +409,7 @@ function ClientRegister() {
                             Número
                           </Label>
                           <Input
-                            className="form-control-alternative"
+                            invalid={errors.number ? true : false}
                             name="number"
                             id="input-number"
                             type="text"
@@ -345,7 +426,7 @@ function ClientRegister() {
                             Bairro
                           </Label>
                           <Input
-                            className="form-control-alternative"
+                            invalid={errors.neighborhood ? true : false}
                             name="neighborhood"
                             id="input-neighborhood"
                             type="text"
@@ -362,7 +443,7 @@ function ClientRegister() {
                             Complemento
                           </Label>
                           <Input
-                            className="form-control-alternative"
+
                             id="input-complement"
                             name="complement"
                             type="text"
@@ -381,10 +462,11 @@ function ClientRegister() {
                             Cidade
                           </Label>
                           <Input
-                            className="form-control-alternative"
+
                             name="city"
                             id="input-city"
                             type="text"
+                            defaultValue={city}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -398,39 +480,23 @@ function ClientRegister() {
                             Estado
                           </Label>
                           <Input
-                            className="form-control-alternative"
+
                             name="state"
                             id="input-state"
                             type="text"
+                            defaultValue={state}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
-                      <Col lg="4">
-                        <FormGroup>
-                          <Label
-                            className="form-control-Label"
-                            for="input-postcode"
-                          >
-                            CEP
-                          </Label>
-                          <Input
-                            className="form-control-alternative"
-                            id="input-postcode"
-                            name="postcode"
-                            type="text"
-                            innerRef={register({ required: true })}
-                          />
-                        </FormGroup>
-                      </Col>
+
                     </Row>
                   </div>
-
                   <hr className="my-4" />
                   <h6 className="heading-small text-muted mb-4">Conta bancária</h6>
                   <div className="pl-lg-4">
                     <Row>
-                      <Col lg="2">
+                      <Col lg="3">
                         <FormGroup>
                           <Label
                             className="form-control-Label"
@@ -438,12 +504,16 @@ function ClientRegister() {
                             Código do banco
                                   </Label>
                           <Input
-                            className="form-control-alternative"
+
                             placeholder="Banco"
                             name="codeBank"
-                            type="text"
+                            type="select"
                             innerRef={register({ required: true })}
-                          />
+                          >
+                            {bancos.map(bank => {
+                              return (<option value={bank.Code} key={bank.Code}>{`${bank.Code} - ${bank.Name}`}</option>)
+                            })}
+                          </Input>
                         </FormGroup>
                       </Col>
                       <Col lg="2">
@@ -452,7 +522,7 @@ function ClientRegister() {
                             Agência
                                   </Label>
                           <Input
-                            className="form-control-alternative"
+                            invalid={errors.agency ? true : false}
                             name="agency"
                             type="text"
                             innerRef={register({ required: true })}
@@ -467,28 +537,32 @@ function ClientRegister() {
                             Número da conta
                                   </Label>
                           <Input
-                            className="form-control-alternative"
+                            invalid={errors.account ? true : false}
                             name="account"
                             type="text"
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
-                      <Col lg="2">
+                      <Col lg="1">
                         <FormGroup>
                           <Label className="form-control-Label">
-                            Dígito da Conta
-                                  </Label>
+                            <span href="#" id="infoDigit" className="text-info">
+                              Dígito
+                            </span>
+                            <UncontrolledTooltip placement="top" target="infoDigit" color="info">
+                              Somente número. Se o dígito for X, digite 0.
+                            </UncontrolledTooltip>
+                          </Label>
                           <Input
-                            className="form-control-alternative .inputNumber"
+                            invalid={errors.accountDigit ? true : false}
                             name="accountDigit"
                             type="text"
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
                       </Col>
-                      <Col lg="2">
-
+                      <Col lg="3">
                         <FormGroup>
                           <Label
                             className="form-control-Label"
@@ -496,7 +570,6 @@ function ClientRegister() {
                             Tipo da conta
                                   </Label>
                           <Input
-                            className="form-control-alternative"
                             name="accountType"
                             type="select"
                             innerRef={register({ required: true })}
@@ -505,12 +578,9 @@ function ClientRegister() {
                             <option value="P" >Conta Poupança</option>
                           </Input>
                         </FormGroup>
-
                       </Col>
-
                     </Row>
                   </div>
-
                   <hr className="my-4" />
                   <h6 className="heading-small text-muted mb-4">Plano</h6>
                   <div className="pl-lg-4">
@@ -518,7 +588,7 @@ function ClientRegister() {
                       <Label>Plano selecionado</Label>
                       <Input
                         type="select"
-                        name="plainId"
+                        name="planId"
                         id="exampleSelect"
                         innerRef={register({ required: true })}
                       >
@@ -528,7 +598,6 @@ function ClientRegister() {
                       </Input>
                     </FormGroup>
                   </div>
-
                   <Col className='d-flex justify-content-center'>
                     <Button color="primary" className='self-align-center' >
                       Confirmar

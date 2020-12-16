@@ -10,7 +10,7 @@ import Sidebar from "components/Sidebar/Sidebar.js";
 
 import routes from "routes.js";
 
-import logo from '../assets/img/logo.png'
+import logo from '../assets/img/brand/logo.svg'
 
 class Admin extends React.Component {
   componentDidUpdate(e) {

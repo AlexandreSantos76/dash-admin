@@ -19,16 +19,19 @@ function PlansProvider({ children }) {
 
   const getPlans = useCallback(async () => {
     const response = await api.get('/plans/list');
-
     setPlans(response.data);
     return response.data;
 
   },[])
 
+  const getPlan = useCallback(async (id) => {
+    const response =  await api.get(`plans/show/${id}`);
+    return response.data
+  },[])
+
   const savePlans = useCallback(async (data) => {
     try {
       const response = await api.post('/plans/add', data)
-
       setPlans(state => [...state, response.data]);
       toast.success("Plano cadastrado !");
       history.push('/admin/plans');
@@ -60,6 +63,8 @@ function PlansProvider({ children }) {
     }
   },[history])
 
+  
+
 
   const handleSetPlanDetailsId = useCallback((id) => {
     setPlanSettingsId(id);
@@ -71,7 +76,7 @@ function PlansProvider({ children }) {
   },[planSettingsId])
 
   return (
-    <PlansContext.Provider value={{plans, getPlans, savePlans, updatePlan, deletePlan, handleSetPlanDetailsId, handleGetPlanDetailsId}}>
+    <PlansContext.Provider value={{plans, getPlans, getPlan, savePlans, updatePlan, deletePlan, handleSetPlanDetailsId, handleGetPlanDetailsId}}>
       {children}
     </PlansContext.Provider>
   )
