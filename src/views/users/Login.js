@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "assets/img/logo.png"
+import logo from "assets/img/brand/logo.svg"
 import { useForm } from "react-hook-form"
 
 import { useAuth } from "hooks/auth"

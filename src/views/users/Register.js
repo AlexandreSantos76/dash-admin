@@ -26,7 +26,7 @@ import * as Yup from "yup";
 // reactstrap components
 import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, InputGroupAddon, InputGroupText, InputGroup, Row, Col, FormFeedback } from "reactstrap";
 
-import logo from "assets/img/logo.png"
+import logo from "assets/img/brand/logo.svg"
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
