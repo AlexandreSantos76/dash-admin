@@ -92,8 +92,7 @@ const Login = () => {
           <Col xs="6">
             <a
               className="text-light"
-              href="#pablo"
-              onClick={e => e.preventDefault()}
+              href="/auth/reset-password"
             >
               <small>Esqueceu a Senha?</small>
             </a>

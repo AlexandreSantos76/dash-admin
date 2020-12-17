@@ -31,6 +31,8 @@ import GroupsUpdate from "views/users/GroupsUpdate";
 import UserCreate from "views/users/UserCreate";
 import Login from "views/users/Login"
 import Register from "views/users/Register"
+import ResetPassword from "views/users/ResetPassword"
+import RePassword from "views/users/RePassword"
 
 var routes = [
   {
@@ -96,11 +98,7 @@ var routes = [
     component: PlanSettings,
     layout: "/admin"
   },
-  // {
-  //   path: "/plan-pay-settings",
-  //   component: PlanMonetizPaySettings,
-  //   layout: "/admin"
-  // },
+  
   {
     path: "/clients-chargeback",
     name: "Chargebacks",
@@ -121,6 +119,16 @@ var routes = [
   {
     path: "/register",
     component: Register,
+    layout: "/auth"
+  },
+  {
+    path: "/reset-password",
+    component: ResetPassword,
+    layout: "/auth"
+  },
+  {
+    path: "/repassword",
+    component: RePassword,
     layout: "/auth"
   }
 

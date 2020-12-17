@@ -48,9 +48,43 @@ function AuthProvider({ children }) {
     history.push('/auth/login');
   }, [history])
 
+  const resetPassword = async (email) => {
+    return await api.post('/session/reset-password', { email })
+        .then((result) => {
+            return true
+        }).catch((err) => {
+            console.log(err.data);
+            return false
+        });
+  }
+  const verifyToken = async (token) => {
+    return await api.post('/session/verify-token', { token })
+        .then((result) => {
+            let data = result.data
+            if (data.auth)
+                return true
+            return data.user
+        }).catch((err) => {
+
+            return false
+        });
+}
+const sendNewPassword = async (token, data) => {
+    api.defaults.headers.common['x-access-token'] = token
+
+
+    return await api.post(`/admin/reset-password`, data)
+        .then((result) => {
+            return result.data.token
+        }).catch((err) => {
+            console.log(err);
+            return false
+        });
+}
+
 
   return (
-    <AuthContext.Provider value={{ user: data?.user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user: data?.user, signIn, signOut, resetPassword, verifyToken, sendNewPassword }}>
       {children}
     </AuthContext.Provider>
   )
