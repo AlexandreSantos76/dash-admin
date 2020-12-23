@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Header from "components/Headers/Header.js";
 import { Button, Card, CardBody, CardFooter, CardHeader, Col, Container, Row, Table } from 'reactstrap';
 import BootstrapTable from 'react-bootstrap-table-next';
@@ -27,6 +27,7 @@ function Users() {
             await api.get("/admin/groups")
                 .then(result => {
                     let data = result.data
+                    console.log(data);
                     setGroups(data)
                 })
         }
@@ -34,6 +35,7 @@ function Users() {
             await api.get("/admin/users")
                 .then(result => {
                     let data = result.data
+                    
                     setUsers(result.data)
                 })
         }
@@ -46,6 +48,14 @@ function Users() {
             <Link to={`user-group-update/${cell}`} className="btn btn-sm btn-primary" color="primary" >Editar</Link>
         )
     }
+    const collGroup = useCallback((id) => {
+        console.log(id);
+        let label = groups?.find(gr=>gr.id === id)
+        return (
+            label.name
+        )
+    },[groups])
+    const teste = ["teste","teste2"]
     const columnsGroups = [
         {
             dataField: 'name',
@@ -63,12 +73,13 @@ function Users() {
             hidden: true
         },
         {
-            dataField: 'name',
-            text: 'Nome'
+            dataField: 'email',
+            text: 'Email'
         },
         {
-            dataField: 'group',
-            text: 'Grupo'
+            dataField: 'groupId',
+            text: 'Grupo',
+            formatter: (cell, row) =>collGroup(cell)
         },
         {
             dataField: 'action',

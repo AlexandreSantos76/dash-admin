@@ -11,6 +11,8 @@ export default function RouteWrapper({
 }) {
 
   const auth = useAuth();
+  console.log(auth.expire);
+  console.log(new Date());
   const signed = !!auth.user;
   //const signed = true;
 

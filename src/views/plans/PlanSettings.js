@@ -49,7 +49,7 @@ function PlanSettings() {
     const loadingData = async () => {
       let response = await getPlan(plan_id)
       setPlan(response)
-      setComissions(response.comissions)
+      setComissions(response?.comissions)
     }
     loadingData()
   }, [plan_id, getPlan])

@@ -16,6 +16,10 @@ function PlansProvider({ children }) {
 
     return selectedId;
   });
+  const handleSetPlanDetailsId = useCallback((id) => {
+    setPlanSettingsId(id);
+    localStorage.setItem('@Monetiz-dashboard:plan-selected', id);
+  },[])
 
   const getPlans = useCallback(async () => {
     const response = await api.get('/plans/list');
@@ -34,7 +38,8 @@ function PlansProvider({ children }) {
       const response = await api.post('/plans/add', data)
       setPlans(state => [...state, response.data]);
       toast.success("Plano cadastrado !");
-      history.push('/admin/plans');
+      handleSetPlanDetailsId(response.data.id);
+      history.push('/admin/plan-settings')
     } catch (err){
       console.log(err);
       toast.error("Tente novamente !");
@@ -66,10 +71,7 @@ function PlansProvider({ children }) {
   
 
 
-  const handleSetPlanDetailsId = useCallback((id) => {
-    setPlanSettingsId(id);
-    localStorage.setItem('@Monetiz-dashboard:plan-selected', id);
-  },[])
+  
 
   const handleGetPlanDetailsId = useCallback(() => {
     return planSettingsId;
