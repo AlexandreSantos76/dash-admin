@@ -16,11 +16,9 @@ import {
   Pagination,
   PaginationItem,
   PaginationLink,
-  Progress,
   Table,
   Container,
   Row,
-  UncontrolledTooltip,
   CardBody
 } from "reactstrap";
 // core components
@@ -86,7 +84,6 @@ function Clients() {
               <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
                 <h3 className="mb-0">Clientes</h3>
                 <div>
-                  <Button color='warning' onClick={handleNewClient}>Atualizar Clientes Pendentes</Button>
                   <Button color='primary' onClick={handleNewClient}>Cadastrar</Button>
                 </div>
               </CardHeader>
@@ -103,8 +100,6 @@ function Clients() {
                   </a>
                 </div>
               </CardBody>
-
-
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
@@ -112,32 +107,16 @@ function Clients() {
                     <th scope="col">Plano</th>
                     <th scope="col">Pagamento</th>
                     <th scope="col">Status</th>
-                    {/* <th scope="col">Users</th> */}
                     <th scope="col" />
                   </tr>
                 </thead>
                 <tbody>
-
                   {clients.map((client, index) => (
                     <tr key={client.id}>
                       <th scope="row">
-                        <Media className="align-items-center">
-                          <a
-                            className="avatar rounded-circle mr-3"
-                            href="#"
-                            onClick={e => e.preventDefault()}
-                          >
-                            <img
-                              alt="..."
-                              src={require("assets/img/theme/bootstrap.jpg")}
-                            />
-                          </a>
-                          <Media>
-                            <span className="mb-0 text-sm">
-                              {client.name}
-                            </span>
-                          </Media>
-                        </Media>
+                        <span className="mb-0 text-sm">
+                          {client.name}
+                        </span>
                       </th>
                       <td>{client.plan ? client.plan.name : "Sem Plano"}</td>
                       <td>
@@ -180,12 +159,7 @@ function Clients() {
                             >
                               Atualizar Situação
                             </DropdownItem>
-                            <DropdownItem
-                              href="#"
-                              onClick={e => e.preventDefault()}
-                            >
-                              Something else here
-                            </DropdownItem>
+                            
                           </DropdownMenu>
                         </UncontrolledDropdown>
                       </td>
@@ -219,22 +193,7 @@ function Clients() {
                         1
                       </PaginationLink>
                     </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#"
-                        onClick={e => e.preventDefault()}
-                      >
-                        2 <span className="sr-only">(current)</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#"
-                        onClick={e => e.preventDefault()}
-                      >
-                        3
-                      </PaginationLink>
-                    </PaginationItem>
+                   
                     <PaginationItem>
                       <PaginationLink
                         href="#"

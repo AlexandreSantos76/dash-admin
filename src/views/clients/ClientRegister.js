@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from "react";
 
+
 // reactstrap components
-import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, Row, Col, Label, UncontrolledTooltip } from "reactstrap";
+import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, Row, Col, Label, Alert } from "reactstrap";
 // core components
 
 import { usePlans } from '../../hooks/plans';
@@ -11,7 +12,9 @@ import UserHeader from "components/Headers/Header";
 import { cpf as validaCpf, cnpj as validaCnpj } from 'cpf-cnpj-validator';
 import { useForm } from "react-hook-form"
 import bancos from "bancos-brasileiros"
-import { cpfMask, cnpjMask, cepMask, phoneMask } from "utils/masks"
+import { cnpjMask, cepMask, phoneMask } from "utils/masks"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import api from "services/api"
@@ -63,8 +66,8 @@ function ClientRegister() {
   }, [getPlans]);
 
   const onSubmit = async data => {
-    let { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email,planId, address, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
-    let userData = { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, type: isCpf ? "pf" : "pj",planId }
+    let { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, planId, address, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
+    let userData = { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, type: isCpf ? "pf" : "pj", planId }
     let addresses = { name: "Bussines Address", address, number, neighborhood, city, state, postcode, complement }
     let bankAccounts = {
       type_accounts: "unique",
@@ -496,6 +499,29 @@ function ClientRegister() {
                   <h6 className="heading-small text-muted mb-4">Conta bancária</h6>
                   <div className="pl-lg-4">
                     <Row>
+                      <Col>
+                        <Alert color="info">
+                          <FontAwesomeIcon icon={faInfoCircle} color="info" /> <strong>Regras Número da Conta</strong><br />
+                          <br />
+                          Deve conter somente digitos numéricos; Para contas com domicílio na Caixa Econômica Federal, o preenchimento deve seguir o seguinte modelo:<br />
+                          <br />
+                              São 3 dígitos para o tipo de conta, 8 dígitos para a conta, os tipos de conta são os seguintes:<br />
+                              001 – Conta Corrente de Pessoa Física;<br />
+                              003 – Conta Corrente de Pessoa Jurídica;<br />
+                              013 – Poupança de Pessoa Física;<br />
+                              022 – Poupança de Pessoa Jurídica.<br />
+                          <br />
+                              Exemplo: no campo de conta, será necessário colocar o tipo de conta (sem os zeros à esquerda) e o número da conta: 100000123.<br />
+                          <br />
+                          <FontAwesomeIcon icon={faInfoCircle} color="info" /> <strong>Regras Dígito da Conta</strong><br />
+                          <br />
+                          Deve conter 1 digito numérico; Caso o dígito da conta seja X, substitua por 0.
+
+                        </Alert>
+                      </Col>
+                    </Row>
+                    <Row>
+
                       <Col lg="3">
                         <FormGroup>
                           <Label
@@ -520,7 +546,7 @@ function ClientRegister() {
                         <FormGroup>
                           <Label className="form-control-Label">
                             Agência
-                                  </Label>
+                          </Label>
                           <Input
                             invalid={errors.agency ? true : false}
                             name="agency"
@@ -531,11 +557,9 @@ function ClientRegister() {
                       </Col>
                       <Col lg="3">
                         <FormGroup>
-                          <Label
-                            className="form-control-Label"
-                          >
+                          <Label className="form-control-Label">
                             Número da conta
-                                  </Label>
+                          </Label>
                           <Input
                             invalid={errors.account ? true : false}
                             name="account"
@@ -550,9 +574,7 @@ function ClientRegister() {
                             <span href="#" id="infoDigit" className="text-info">
                               Dígito
                             </span>
-                            <UncontrolledTooltip placement="top" target="infoDigit" color="info">
-                              Somente número. Se o dígito for X, digite 0.
-                            </UncontrolledTooltip>
+
                           </Label>
                           <Input
                             invalid={errors.accountDigit ? true : false}

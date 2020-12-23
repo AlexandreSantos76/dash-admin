@@ -14,67 +14,78 @@ import {
   Row,
   Col,
   Table,
-  Media,
   Badge,
   Label,
+  Alert
 } from "reactstrap";
 
 import { format, parseISO, isAfter } from 'date-fns';
 import { formatPrice } from '../../utils/format';
 import { useUsers } from '../../hooks/users';
 import { useForm } from "react-hook-form"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 
 // core components
 import UserHeader from "components/Headers/Header";
 import api from "services/api";
 
 function ClientProfile(){
-  const { register, handleSubmit, watch, errors } = useForm();
+  const { register, handleSubmit } = useForm();
   const {getSelectedUserId, updateUser } = useUsers();
   const [isCpf, setIsCpf] = useState(false);
-  const [editable, setEditable] = useState(false);
-
   const [client, setClient] = useState({});
   const [address, setAddress] = useState({});
   const [banks, setBanks] = useState({})
   const [sales, setSales] = useState([]);
   const [chargebacks, setChargebacks] = useState([]);
-
-
-
   const [plans, setPlans] = useState([]);
-  const [planSelected, setPlanSelected] = useState(null);
   const user_id = getSelectedUserId();
-
-
-  const handleEditProfile = useCallback((e) => {
-    e.preventDefault()
-    setEditable(state => !state);
-  },[]) 
-
   useEffect(() => {
     async function loadingData(){
-      console.log("CLIENTE PROFILE", user_id)
       const response = await api.get(`/user/findOne/${user_id}`);
-      const responsePlans = await api.get('/plans/list');
-
-      
-      setClient(response.data.user);
+      const responsePlans = await api.get('/plans/list');  
+      let user = response.data.user
+      user.subsellerId = response.data.user.subseller.subsellerId   
+      setClient(user);
       setAddress(response.data.user.addresses[0])
       setBanks(response.data.user.banks[0])
-      setPlanSelected(response.data.user.plan_id);
       setSales(response.data.user.store.orders);
       setChargebacks(response.data.user.chargebacks);
-
       setPlans(responsePlans.data);
-      console.log(response.data)
-      console.log(responsePlans.data)
+      response.data.user.type === "pf"? setIsCpf(true):setIsCpf(false)
     }
     loadingData();
   },[getSelectedUserId, user_id])
 
-  const onSubmit = () => {
-
+  const onSubmit = (data) => {
+    let {legalName, tradeName, document, stateFiscalDocument, phone, mobile, email,planId, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
+    let userData = { id:user_id,legalName, tradeName, document, stateFiscalDocument, phone, mobile, email,planId,type: isCpf ? "pf" : "pj" }
+    
+    let addresses = { id:address.id,name: "Bussines Address", address:data.address, number, neighborhood, city, state, postcode, complement }
+    
+    let bankAccounts = {
+      type_accounts: "unique",
+      unique_account: {id:banks.id, codeBank, agency, account, accountType, accountDigit }
+    }
+    userData.mobile = userData.mobile.replace(/\D/g, "")
+    userData.document = client.document
+    userData.stateFiscalDocument = client.stateFiscalDocument
+    userData.phone = userData.phone.replace(/\D/g, "")
+    addresses.postcode = addresses.postcode.replace(/\D/g, "")
+    let dataSubmit = {
+      user: userData,
+      mailingAddressEquals: "S",
+      addresses: [addresses],
+      bankAccounts: bankAccounts,
+      subsellerId: client.subsellerId
+    }
+    api.put("/user/update", dataSubmit)
+      .then((result) => {
+        console.log(result.data)
+      }).catch((err) => {
+        console.log(err)
+      });
   }
 
   return (
@@ -90,23 +101,13 @@ function ClientProfile(){
                   <Col xs="8">
                     <h3 className="mb-0">Cliente</h3>
                   </Col>
-                  <Col className="text-right" xs="4">
-                    <Button
-                      color="primary"
-                      href="#pablo"
-                      onClick={(e) =>handleEditProfile(e)}
-                      size="sm"
-                    >
-                      Editar
-                    </Button>
-                  </Col>
+                  
                 </Row>
               </CardHeader>
               <CardBody>
                 {client && (
-                  <Form onSubmit={handleSubmit(onSubmit)}>
+                  <Form onSubmit={handleSubmit(onSubmit)}>                  
                   
-
                   <h6 className="heading-small text-muted mb-4">
                     Informações
                   </h6>
@@ -185,6 +186,7 @@ function ClientProfile(){
                                   id="input-cpf"
                                   name="document"
                                   type="text"
+                                  disabled={true}
                                   innerRef={register({ required: true })}
                                   defaultValue={client.document}
                                 />
@@ -263,6 +265,7 @@ function ClientProfile(){
                                   name="document"
                                   id="input-cnpj"
                                   type="text"
+                                  disabled={true}
                                   innerRef={register({ required: true })}
                                   defaultValue={client.document}
                                 />
@@ -283,6 +286,7 @@ function ClientProfile(){
                                   name="stateFiscalDocument"
                                   innerRef={register({ required: true })}
                                   type="text"
+                                  disabled={true}
                                   defaultValue={client.stateFiscalDocument}
                                 />
                               </FormGroup>
@@ -462,6 +466,28 @@ function ClientProfile(){
                   <hr className="my-4" />
                   <h6 className="heading-small text-muted mb-4">Conta bancária</h6>
                   <div className="pl-lg-4">
+                  <Row>
+                      <Col>
+                        <Alert color="info">
+                          <FontAwesomeIcon icon={faInfoCircle} color="info" /> <strong>Regras Número da Conta</strong><br />
+                          <br />
+                          Deve conter somente digitos numéricos; Para contas com domicílio na Caixa Econômica Federal, o preenchimento deve seguir o seguinte modelo:<br />
+                          <br />
+                              São 3 dígitos para o tipo de conta, 8 dígitos para a conta, os tipos de conta são os seguintes:<br />
+                              001 – Conta Corrente de Pessoa Física;<br />
+                              003 – Conta Corrente de Pessoa Jurídica;<br />
+                              013 – Poupança de Pessoa Física;<br />
+                              022 – Poupança de Pessoa Jurídica.<br />
+                          <br />
+                              Exemplo: no campo de conta, será necessário colocar o tipo de conta (sem os zeros à esquerda) e o número da conta: 100000123.<br />
+                          <br />
+                          <FontAwesomeIcon icon={faInfoCircle} color="info" /> <strong>Regras Dígito da Conta</strong><br />
+                          <br />
+                          Deve conter 1 digito numérico; Caso o dígito da conta seja X, substitua por 0.
+
+                        </Alert>
+                      </Col>
+                    </Row>
                     <Row>
                       <Col lg="2">
                         <FormGroup>
@@ -556,9 +582,9 @@ function ClientProfile(){
                       <Label>Plano selecionado</Label>
                       <Input
                         type="select"
-                        name="plainId"
+                        name="planId"
                         id="exampleSelect"
-                        value={client.planId}
+                        defaultValue={client.planId}
                         innerRef={register({ required: true })}
                       >
                         {plans.map(plan => (

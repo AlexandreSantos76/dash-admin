@@ -14,42 +14,28 @@ import {
   Pagination,
   PaginationItem,
   PaginationLink,
-  Progress,
   Table,
   Container,
   Row,
-  Button,
-  UncontrolledTooltip
+  Button
 } from "reactstrap";
 // core components
-
 import { usePlans } from '../../hooks/plans'
-
 import Header from "components/Headers/Header.js";
-
-import api from '../../services/api';
-
-import { formatPrice } from '../../utils/format'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCog, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 function Plans(){
-
-
   const history = useHistory();
-  const  { getPlans, handleSetPlanDetailsId } = usePlans();
-
+  const  { getPlans, handleSetPlanDetailsId, deletePlan } = usePlans();
   const [plans, setPlans] = useState([]);
 
   useEffect(() => {
     async function loadingPlans(){
       const response = await getPlans()
       setPlans(response);
-
-      console.log(response)
     }
-
-    loadingPlans();
-
-    
+    loadingPlans();    
   },[getPlans])
 
   const handlePlanRegister = useCallback(() => {
@@ -57,11 +43,16 @@ function Plans(){
   },[history])
 
   const handlePlanSettings = useCallback((plan)=> {
-    console.log("ID", plan)
     handleSetPlanDetailsId(plan.id);
-
     history.push('/admin/plan-settings')
   },[handleSetPlanDetailsId, history])
+
+  const handlePlanDelete = useCallback(async(id)=>{
+    deletePlan(id)
+    const response = await getPlans()
+      setPlans(response);
+
+  },[deletePlan, getPlans])
 
   return (
     <>
@@ -90,19 +81,9 @@ function Plans(){
                 <tbody>
                   
                     {plans.map(( plan) => (
-                      <tr>
+                      <tr key={plan.id}>
                       <th scope="row">
                         <Media className="align-items-center">
-                          <a
-                            className="avatar rounded-circle mr-3"
-                            href="#pablo"
-                            onClick={e => e.preventDefault()}
-                          >
-                            <img
-                              alt="..."
-                              src={require("assets/img/theme/bootstrap.jpg")}
-                            />
-                          </a>
                           <Media>
                             <span className="mb-0 text-sm">
                               {plan.name}
@@ -119,7 +100,7 @@ function Plans(){
 
                       <td>
                         <Badge color="" className="badge-dot mr-4">
-                          <i className={plan.active ? "bg-success" : "bg-warning"} />
+                          <i className={plan.status ? "bg-success" : "bg-warning"} />
                           {plan.status ? "Ativo": 'Inativo'}
                         </Badge>
                       </td>
@@ -141,20 +122,15 @@ function Plans(){
                               href="#pablo"
                               onClick={() => handlePlanSettings(plan)}
                             >
-                              Configuração
+                             <FontAwesomeIcon icon={faCog} color="primary" className="mr-1"/>Configuração
                             </DropdownItem>
                             <DropdownItem
                               href="#pablo"
-                              onClick={e => e.preventDefault()}
+                              onClick={e => {e.preventDefault(); handlePlanDelete(plan.id)}}
                             >
-                              Another action
+                              <FontAwesomeIcon icon={faTrash} color="red" className="mr-1"/> <span className="text-warning">Excluir Plano</span>
                             </DropdownItem>
-                            <DropdownItem
-                              href="#pablo"
-                              onClick={e => e.preventDefault()}
-                            >
-                              Something else here
-                            </DropdownItem>
+                           
                           </DropdownMenu>
                         </UncontrolledDropdown>
                       </td>
@@ -188,22 +164,7 @@ function Plans(){
                         1
                       </PaginationLink>
                     </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                      >
-                        2 <span className="sr-only">(current)</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                      >
-                        3
-                      </PaginationLink>
-                    </PaginationItem>
+                   
                     <PaginationItem>
                       <PaginationLink
                         href="#pablo"
