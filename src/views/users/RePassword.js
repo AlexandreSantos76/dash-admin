@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Lottie from "react-lottie";
 import * as Loading from "assets/custom/loading-white.json"
 import { useForm } from "react-hook-form";
+import logo from "assets/img/brand/logo.svg"
 
 // reactstrap components
 import {
@@ -98,7 +99,7 @@ export default function RePassword() {
 
                     <CardBody className="px-lg-5 py-lg-5">
                         <div className="p-2 text-center">
-                            <img alt="..." src={require("assets/img/brand/logo.svg")} style={{ maxWidth: '80%' }} />
+                            <img alt="..." src={logo} style={{ maxWidth: '80%' }} />
                         </div>
                         <div className="text-center h3 mb-4">
                             <small>Informe uma nova senha de acesso à sua conta.</small>

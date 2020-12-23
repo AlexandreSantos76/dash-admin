@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Lottie from "react-lottie";
 import * as Loading from "assets/custom/loading-white.json"
+import logo from "assets/img/brand/logo.svg"
 
 // reactstrap components
 import {
@@ -80,7 +81,7 @@ const Login = () => {
 
                                     <CardBody className="px-lg-5 py-lg-5">
                                         <div className="p-2 text-center">
-                                            <img alt="..." src={require("assets/img/brand/logo.svg")} style={{ maxWidth: '80%' }} />
+                                            <img alt="..." src={logo} style={{ maxWidth: '80%' }} />
                                         </div>
                                         <div className="text-center h3 mb-4">
                                             <small>Digite seu e-mail abaixo</small>
