@@ -80,7 +80,7 @@ export default function RePassword() {
                     <CardBody className="px-lg-5 py-lg-5">
                         <div className="text-center mt-4">
                             <h1 className="h2">Perfeito!</h1>
-                            <p className="lead">Você redefiniu sua senha de acesso ao MonetizPay. Volte para o Login para acessar sua conta.</p>
+                            <p className="lead">Você redefiniu sua senha de acesso ao Converte.me. Volte para o Login para acessar sua conta.</p>
                             <div className="text-center mt-3">
                                 <a href="/auth/login" className="btn btn-lg btn-primary" title="Clique aqui para acessar sua conta">Voltar para o login</a>
                             </div>

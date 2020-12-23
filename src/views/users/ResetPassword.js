@@ -125,7 +125,7 @@ const Login = () => {
                                         <CardBody className="px-lg-5 py-lg-5">
                                             <div className="text-center mt-4">
                                                 <h1 className="h2">Perfeito!</h1>
-                                                <p className="lead">Acabamos de enviar para o seu endereço de e-mail uma mensagem para que você possa redefinir sua senha de acesso ao MonetizPay. Em alguns minutos, verifique sua caixa de entrada.</p>
+                                                <p className="lead">Acabamos de enviar para o seu endereço de e-mail uma mensagem para que você possa redefinir sua senha de acesso ao Converte.me. Em alguns minutos, verifique sua caixa de entrada.</p>
                                                 <div className="text-center mt-3">
                                                     <a href="/auth/login" className="btn btn-lg btn-primary" title="Clique aqui para acessar sua conta">Voltar para o login</a>
                                                 </div>

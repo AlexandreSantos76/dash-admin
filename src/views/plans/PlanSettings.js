@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, Row, Col, CardFooter, Table, Modal, ModalHeader, ModalBody, ModalFooter, Label, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown } from "reactstrap";
-import { useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
 // core components
 import UserHeader from "components/Headers/Header";
@@ -19,16 +18,14 @@ import elo from '../../assets/img/bandeiras/elo.svg';
 import api from "services/api";
 
 function PlanSettings() {
-  const { register, errors, handleSubmit } = useForm()
+  const { register, handleSubmit } = useForm()
   const { register: register2, handleSubmit: handleSubmitComissions } = useForm();
   const { getPlan, handleGetPlanDetailsId, updatePlan, deletePlan } = usePlans();
-  const history = useHistory();
   const plan_id = handleGetPlanDetailsId();
   const [plan, setPlan] = useState({})
   const [comissions, setComissions] = useState([])
-  const [collapse, setCollpase] = useState(false);
   const [modal, setModal] = useState(false);
-  const [brands, setBrands] = useState([
+  const [brands] = useState([
     { brand: `Boleto`, img: boleto, },
     { brand: `Visa`, img: visa, },
     { brand: `Mastercard`, img: master_card, },
@@ -36,7 +33,7 @@ function PlanSettings() {
     { brand: `Elo`, img: elo, },
     { brand: `Hipercard`, img: hiper_card, },
   ]);
-  const [inst, setInst] = useState([
+  const [inst] = useState([
     { value: "BOLETO", label: "Boleto" },
     { value: "CREDITO A VISTA", label: "Crédito a Vista" },
     { value: "PARCELADO LOJISTA 3X", label: "Parcelado Lojista 3x" },
@@ -89,7 +86,7 @@ function PlanSettings() {
     value = value.replace(/\D/g, "")
     try {
 
-      const response = await api.put("/plans/comissions", {id:id,value:value})
+      await api.put("/plans/comissions", {id:id,value:value})
       let newArr = [...comissions];
       newArr[index].value = value;
       console.log(newArr);

@@ -25,9 +25,6 @@ import {
   Row,
   Col
 } from "reactstrap";
-
-var ps;
-
 class Sidebar extends React.Component {
   state = {
     collapseOpen: false
@@ -56,7 +53,7 @@ class Sidebar extends React.Component {
   createLinks = routes => {
     return routes.map((prop, key) => {
       if(!prop.name){
-        return;
+        return (<></>);
       }
       return (
         <NavItem key={key}>
@@ -74,7 +71,7 @@ class Sidebar extends React.Component {
     });
   };
   render() {
-    const { bgColor, routes, logo } = this.props;
+    const { routes, logo } = this.props;
     let navbarBrandProps;
     if (logo && logo.innerLink) {
       navbarBrandProps = {
