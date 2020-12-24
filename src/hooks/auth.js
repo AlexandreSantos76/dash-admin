@@ -25,7 +25,7 @@ function AuthProvider({ children }) {
   });
 
   const isAuth = useCallback(() => {    
-    if(data.user && data.token){
+    if(data?.user && data?.token){
       let dateNow =  new Date()
       
         return (jwtDecode(data.token).exp < (dateNow.getTime() - jwtDecode(data.token).iat))       
