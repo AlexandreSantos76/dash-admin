@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 // reactstrap components
 import {
@@ -22,17 +22,18 @@ import {
 import { format, parseISO, isAfter } from 'date-fns';
 import { formatPrice } from '../../utils/format';
 import { useUsers } from '../../hooks/users';
+import {usePlans} from '../../hooks/plans'
 import { useForm } from "react-hook-form"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 
 // core components
 import UserHeader from "components/Headers/Header";
-import api from "services/api";
 
 function ClientProfile(){
   const { register, handleSubmit } = useForm();
-  const {getSelectedUserId, updateUser } = useUsers();
+  const {getSelectedUserId, updateUser, getUser } = useUsers();
+  const {getPlans} = usePlans();
   const [isCpf, setIsCpf] = useState(false);
   const [client, setClient] = useState({});
   const [address, setAddress] = useState({});
@@ -43,8 +44,8 @@ function ClientProfile(){
   const user_id = getSelectedUserId();
   useEffect(() => {
     async function loadingData(){
-      const response = await api.get(`/user/findOne/${user_id}`);
-      const responsePlans = await api.get('/plans/list');  
+      const response = await getUser(user_id );
+      const responsePlans = await getPlans();  
       let user = response.data.user
       user.subsellerId = response.data.user.subseller.subsellerId   
       setClient(user);
@@ -52,11 +53,11 @@ function ClientProfile(){
       setBanks(response.data.user.banks[0])
       setSales(response.data.user.store.orders);
       setChargebacks(response.data.user.chargebacks);
-      setPlans(responsePlans.data);
+      setPlans(responsePlans);
       response.data.user.type === "pf"? setIsCpf(true):setIsCpf(false)
     }
     loadingData();
-  },[getSelectedUserId, user_id])
+  },[getSelectedUserId, user_id, getUser,getPlans])
 
   const onSubmit = (data) => {
     let {legalName, tradeName, document, stateFiscalDocument, phone, mobile, email,planId, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
@@ -80,12 +81,7 @@ function ClientProfile(){
       bankAccounts: bankAccounts,
       subsellerId: client.subsellerId
     }
-    api.put("/user/update", dataSubmit)
-      .then((result) => {
-        console.log(result.data)
-      }).catch((err) => {
-        console.log(err)
-      });
+    updateUser(dataSubmit)
   }
 
   return (

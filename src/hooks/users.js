@@ -30,15 +30,22 @@ function UsersProvider({ children }){
   const updateUser = useCallback( async (data) => {
 
     try {
-      await api.put(`/user/updateOne/${data.id}`, data);
+      await api.put("/user/update", data);
       toast.success("Usuário atualizado.");
     } catch(err){
       toast.error("Tente novamente.")
     }
   },[])
 
+  const getUser = useCallback(async(id) => {
+      const response = await api.get(`/user/findOne/${id}`);
+      return response
+    },
+    [],
+  )
+
   return (
-    <UsersContext.Provider value={{saveSelectedUserId, getSelectedUserId, updateUser, userRegister}}>
+    <UsersContext.Provider value={{saveSelectedUserId, getSelectedUserId, updateUser, userRegister, getUser}}>
       {children}
     </UsersContext.Provider>
   )
