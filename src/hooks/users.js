@@ -23,8 +23,9 @@ function UsersProvider({ children }){
 
 
   const userRegister = useCallback(async (data) => {
-    const response = await api.post('/user/add', data);
-    return response.data;
+    await api.post('/user/add', data);
+    toast.success("Usuário cadastrado com sucesso.",{autoClose:5000});
+    
   },[])
 
   const updateUser = useCallback( async (data) => {
@@ -36,6 +37,8 @@ function UsersProvider({ children }){
       toast.error("Tente novamente.")
     }
   },[])
+
+  
 
   const getUser = useCallback(async(id) => {
       const response = await api.get(`/user/findOne/${id}`);

@@ -7,6 +7,7 @@ import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, 
 // core components
 
 import { usePlans } from '../../hooks/plans';
+import { useUsers } from '../../hooks/users';
 
 import UserHeader from "components/Headers/Header";
 import { cpf as validaCpf, cnpj as validaCnpj } from 'cpf-cnpj-validator';
@@ -45,7 +46,7 @@ const schemaPersonData = Yup.object().shape({
   accountDigit: Yup.string().matches(/^[0-9]*$/, "Digite somente números").required("Dígito da conta é um campo obrigatório.").max(1, "Digito inválido")
 });
 function ClientRegister() {
-
+  const {userRegister} = useUsers();
   const { getPlans } = usePlans();
   const { register, handleSubmit, errors } = useForm({ resolver: yupResolver(schemaPersonData) });
   const [postcode, setPostcode] = useState('')
@@ -65,7 +66,7 @@ function ClientRegister() {
 
   }, [getPlans]);
 
-  const onSubmit = async data => {
+  const onSubmit = async (data, e) => {
     let { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, planId, address, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
     let userData = { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, type: isCpf ? "pf" : "pj", planId }
     let addresses = { name: "Bussines Address", address, number, neighborhood, city, state, postcode, complement }
@@ -88,12 +89,8 @@ function ClientRegister() {
       marketplace_store: "N",
       payment_plan: 3
     }
-    api.post("/user/add", dataSubmit)
-      .then((result) => {
-        console.log(result.data)
-      }).catch((err) => {
-        console.log(err)
-      });
+    await userRegister(dataSubmit)
+    e.target.reset();
 
   }
   useEffect(() => {
