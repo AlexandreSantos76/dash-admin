@@ -3,9 +3,10 @@ import React, { useEffect, useState } from "react";
 
 // reactstrap components
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
-import api from "services/api";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCreditCard, faBarcode, faExchangeAlt } from '@fortawesome/free-solid-svg-icons'
+import { faCreditCard, faBarcode, faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
+import {statement} from "../../hooks/billings"
+import moment from "moment"
 
 function Header() {
 
@@ -13,13 +14,15 @@ function Header() {
 
   useEffect(() => {
     async function loadingData() {
-      const response = await api.get('/chargebacks/list-status-open');
-
-      setOpenChargebacks(response.data.length);
+      const init = moment().subtract(30,'days').format()
+      const end = moment().format()
+      statement({init:init, end:end})
     }
 
     loadingData();
   }, [])
+
+  
   return (
     <>
       <div className="header bg-gradient-info pb-8 pt-5 pt-md-8">
