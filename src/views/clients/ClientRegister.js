@@ -18,14 +18,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import api from "services/api"
+import api from "services/api";
+import { toast } from "react-toastify";
 
 const schemaPersonData = Yup.object().shape({
   legalName: Yup.string().required("Nome é um campo obrigatório.").min(8),
   email: Yup.string().email("Exemplo: exemplo@monetiz.com.br").required("E-mail é um campo obrigatório."),
   document: Yup.string().test('Valida Documento', 'Documento Inválido', value => {
     let v = value.replace(/\D/g, "")
-    console.log(v.length);
     if (v.length === 11) {
       return validaCpf.isValid(value)
     } else if (v.length === 14) {
@@ -89,8 +89,11 @@ function ClientRegister() {
       marketplace_store: "N",
       payment_plan: 3
     }
-    await userRegister(dataSubmit)
-    e.target.reset();
+    
+    let res = await userRegister(dataSubmit)
+    if(res){
+      e.target.reset();
+    }
 
   }
   useEffect(() => {
@@ -106,8 +109,6 @@ function ClientRegister() {
         })
     }
   }, [postcode])
-
-  console.log(errors);
 
   return (
     <>

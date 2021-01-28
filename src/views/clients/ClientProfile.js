@@ -619,7 +619,9 @@ function ClientProfile(){
                 </thead>
                 <tbody>
                   
-                    {sales.map(sale => (
+                    
+{/* 
+{sales.map(sale => (
                       <tr key={sale.id}>
                       <th scope="row">
 
@@ -635,7 +637,6 @@ function ClientProfile(){
                       <td>
                         {format(sale.createdAt, 'dd/MM/YYYY')}
                       </td>
-{/* 
                       <td>
                         <Badge color="" className="badge-dot mr-4">
                           <i className={sale.active ? "bg-success" : "bg-warning"} />
@@ -675,9 +676,9 @@ function ClientProfile(){
                             </DropdownItem>
                           </DropdownMenu>
                         </UncontrolledDropdown>
-                      </td> */}
+                      </td>
                     </tr>
-                    ))}
+                    ))} */}
                 </tbody>
                 </Table> 
               </CardBody>

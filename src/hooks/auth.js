@@ -47,6 +47,8 @@ function AuthProvider({ children }) {
         localStorage.setItem('@MonetizDB:user', await JSON.stringify(user));
         localStorage.setItem('@MonetizDB:expire', date)
         api.defaults.headers.authorization = `Bearer ${token}`;
+       api.defaults.headers.contentType ="application/json";
+       api.defaults.headers.accept="application/json;"
         setData({ token, user });
         history.push('/');
       }).catch((err) => {

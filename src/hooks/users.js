@@ -23,8 +23,21 @@ function UsersProvider({ children }){
 
 
   const userRegister = useCallback(async (data) => {
-    await api.post('/user/add', data);
-    toast.success("Usuário cadastrado com sucesso.",{autoClose:5000});
+    try {
+      const response = await api.post('/user/add', data)
+      console.log(response);    
+      toast.success("Usuário cadastrado com sucesso.",{autoClose:10000});      
+    } catch (error) {
+      let errors = error.response.data.error
+      errors.forEach(rs => {
+        toast.error(rs.message)
+      })
+    }
+   
+    
+      
+    
+    
     
   },[])
 
@@ -41,7 +54,7 @@ function UsersProvider({ children }){
   
 
   const getUser = useCallback(async(id) => {
-      const response = await api.get(`/user/findOne/${id}`);
+      const response = await api.get(`/user/find/${id}`);
       return response
     },
     [],
