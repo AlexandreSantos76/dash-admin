@@ -35,7 +35,7 @@ function UsersProvider({ children }) {
         })
       }
       if (error.response.status === 402){
-          toast.error(error.response.data.Message)
+          toast.error("Ocorreu um erro cadastro getnet" )
       }
     }
 
