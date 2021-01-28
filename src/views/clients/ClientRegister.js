@@ -498,7 +498,7 @@ function ClientRegister() {
                   <div className="pl-lg-4">
                     <Row>
                       <Col>
-                        <Alert color="info">
+                        <Alert color="warning">
                           <FontAwesomeIcon icon={faInfoCircle} color="info" /> <strong>Regras Número da Conta</strong><br />
                           <br />
                           Deve conter somente digitos numéricos; Para contas com domicílio na Caixa Econômica Federal, o preenchimento deve seguir o seguinte modelo:<br />
