@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // node.js library that concatenates classes (strings)
 import classnames from "classnames";
 // javascipt plugin for creating charts
@@ -28,10 +28,26 @@ import {
 } from "variables/charts.js";
 
 import Header from "components/Headers/Header";
+import api from "services/api";
+import moment from "moment"
 
 const Index = () => {
   const [activeNav, setActiveNav] = useState(1)
   const [chart, setChart] = useState("data1")
+
+  useEffect(() => {
+    const fetchData = () => {
+      const dateStart = moment().subtract(30, 'days').format();
+      const dateEnd = moment().format();
+      api.get(`/reports-admin/statement?init=${dateStart}&end=${dateEnd}`)
+      .then((result) => {
+        console.log(result.data)
+      }).catch((err) => {
+        
+      });
+    }
+    fetchData()
+  }, [])
 
   if (window.Chart) {
     parseOptions(Chart, chartOptions());
@@ -125,7 +141,7 @@ const Index = () => {
             </Card>
           </Col>
         </Row>
-        
+
       </Container>
     </>
   );
