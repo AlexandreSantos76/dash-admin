@@ -49,7 +49,7 @@ function UsersProvider({ children }) {
   const updateUser = useCallback(async (data) => {
 
     try {
-      await api.put("/user/update", data);
+      await api.put("/user/update-admin", data);
       toast.success("Usuário atualizado.");
     } catch (err) {
       toast.error("Tente novamente.")

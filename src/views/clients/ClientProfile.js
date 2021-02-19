@@ -228,7 +228,6 @@ function ClientProfile(){
                                 </Label>
                                 <Input
                                   className="form-control-alternative"
-                                  defaultValue=""
                                   id="input-birthday"
                                   name="birthdate"
                                   type="date"
@@ -262,7 +261,6 @@ function ClientProfile(){
                                   id="input-cnpj"
                                   type="text"
                                   disabled={true}
-                                  innerRef={register({ required: true })}
                                   defaultValue={client.document}
                                 />
                               </FormGroup>
@@ -280,9 +278,8 @@ function ClientProfile(){
                                   className="form-control-alternative"
                                   id="input-state-fiscal"
                                   name="stateFiscalDocument"
-                                  innerRef={register({ required: true })}
                                   type="text"
-                                  disabled={true}
+                                  disabled
                                   defaultValue={client.stateFiscalDocument}
                                 />
                               </FormGroup>

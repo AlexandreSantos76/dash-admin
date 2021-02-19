@@ -50,6 +50,7 @@ function AuthProvider({ children }) {
        api.defaults.headers.contentType ="application/json";
        api.defaults.headers.accept="application/json;"
         setData({ token, user });
+        
         history.push('/');
       }).catch((err) => {
         let data = err.response.data
