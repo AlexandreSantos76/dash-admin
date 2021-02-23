@@ -30,7 +30,7 @@ function PlanSettings() {
     { brand: `Visa`, img: visa, },
     { brand: `Mastercard`, img: master_card, },
     { brand: `Amex`, img: american_express, },
-    { brand: `Elo`, img: elo, },
+    { brand: `Elo Crédito`, img: elo, },
     { brand: `Hipercard`, img: hiper_card, },
   ]);
   const [inst] = useState([
