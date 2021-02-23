@@ -225,7 +225,7 @@ function PlanSettings() {
                                       let brand = brands.filter(o => o.brand === value.brand)
                                       return (
                                         <tr key={value.id}>
-                                          <td><img src={brand[0]?.img} alt={brand[0].brand} style={{ maxWidth: "30px" }} /></td>
+                                          <td><img src={brand[0]?.img} alt={brand[0]?.brand} style={{ maxWidth: "30px" }} /></td>
                                           <td>{value.name}</td>
                                           <td className="text-center">{value.type === "percentage" ? "%" : "R$"}</td>
                                           <td>
