@@ -5,22 +5,13 @@ import React, { useEffect, useState } from "react";
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCreditCard, faBarcode, faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
-import {statement} from "../../hooks/billings"
-import moment from "moment"
+
 
 function Header() {
 
   const [openChargebacks, setOpenChargebacks] = useState(0);
 
-  useEffect(() => {
-    async function loadingData() {
-      const init = moment().subtract(30,'days').format()
-      const end = moment().format()
-      statement({init:init, end:end})
-    }
-
-    loadingData();
-  }, [])
+  
 
   
   return (

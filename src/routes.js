@@ -33,7 +33,8 @@ import Login from "views/users/Login"
 import Register from "views/users/Register"
 import ResetPassword from "views/users/ResetPassword"
 import RePassword from "views/users/RePassword"
-
+import Statement from "views/statements/Statement"
+ 
 var routes = [
   {
     path: "/index",
@@ -71,6 +72,13 @@ var routes = [
     name: "Usuários",
     icon: "fas fa-users text-primary text-red",
     component: Users,
+    layout: "/admin"
+  },
+  {
+    path: "/statements",
+    name: "Extratos",
+    icon: "fas fa-coins text-primary text-yellow",
+    component: Statement,
     layout: "/admin"
   },
   {
