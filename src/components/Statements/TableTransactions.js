@@ -15,9 +15,10 @@ const TableTranctions = (props) => {
             let data = props.transactions
             let array = []
             data.forEach((value) => {
+                console.log(value);
                 array.push(value.summary)
             })
-            
+            console.log(array);
             setSummary(array)
         }
         getSumary()
