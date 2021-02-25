@@ -4,6 +4,10 @@ export function formatCPF(cpf) {
     cpf = cpf.replace(/[^\d]/g, "");
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
+export function formatCNPJ(value) {
+    let x = value.replace(/[^\d]/g, "").match(/(\d{0,2})(\d{0,3})(\d{0,3})(\d{0,4})(\d{0,2})/);
+    return !x[2] ? x[1] : x[1] + '.' + x[2] + '.' + x[3] + '/' + x[4] + (x[5] ? '-' + x[5] : '');
+}
 
 export function formatPhone(v) {
     v = v.replace(/\D/g, "");             //Remove tudo o que não é dígito

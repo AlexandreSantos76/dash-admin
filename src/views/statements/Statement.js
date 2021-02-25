@@ -3,6 +3,7 @@ import { NavLink, Card, Container, Row, CardBody } from "reactstrap";
 import Header from "components/Headers/HeaderClear";
 import { statement } from "../../hooks/billings"
 import moment from "moment"
+import DatetimeRangePicker from 'react-datetime-range-picker';
 
 import Col from "reactstrap/lib/Col";
 import Nav from "reactstrap/lib/Nav";
@@ -18,19 +19,19 @@ const Statement = () => {
     const [transactions, setTransations] = useState([])
     const [comissions, setComissions] = useState([])
     const [chargebacks, setChargebacks] = useState([])
+    const [init, setInit] = useState(moment().clone().startOf('month').format())
+    const [end, setEnd] = useState(moment().format())
 
     useEffect(() => {
         async function loadingData() {
-            const init = moment().clone().startOf('month').format()
-            const end = moment().format()
             let statements = await statement({ init: init, end: end })
             setTransations(statements.list_transactions)
             setComissions(statements.commission)
             setChargebacks(statements.chargeback)
         }
         loadingData();
-    }, [])
-    console.log(comissions);
+    }, [init, end])
+    console.log(init);
     return (
         <>
             <Header />
@@ -74,6 +75,11 @@ const Statement = () => {
                                             <CardBody>
                                                 <Row>
                                                     <Col>
+                                                    <Row>
+                                                        <Col xs="6">
+                                                        <DatetimeRangePicker className="d-flex" inline={true} startDate={init} endDate={end} locale="pt-br" pickerClassName="col-6" />
+                                                        </Col>
+                                                    </Row>
                                                     <TableTransactions transactions={transactions} />
                                                     </Col>
                                                 </Row>

@@ -7,22 +7,51 @@ import TableCell from "@material-ui/core/TableCell";
 import Table from 'reactstrap/lib/Table';
 import moment from 'moment'
 import 'moment/locale/pt-br'
+import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
+import { formatCNPJ } from 'utils/FormateUtils';
+import { formatCurrency } from 'utils/FormateUtils';
+import api from 'services/api';
+import Row from 'reactstrap/lib/Row';
+import Col from 'reactstrap/lib/Col';
+import { formatCPF } from 'utils/FormateUtils';
 
 const TableTranctions = (props) => {
     const [summary, setSummary] = useState()
+    const [single, setSingle] = useState()
+    const [modal, setModal] = useState(false);
     useEffect(() => {
         function getSumary() {
             let data = props.transactions
-            let array = []
-            data.forEach((value) => {
-                console.log(value);
-                array.push(value.summary)
+            let arraySum = []
+            data?.forEach((value) => {
+                let sum = value.summary
+                sum.details = value.details
+                arraySum.push(sum)
             })
-            console.log(array);
-            setSummary(array)
+            setSummary(arraySum)
         }
         getSumary()
     }, [props])
+    const toggle = () => setModal(!modal);
+    const getDetails = async (order) => {
+        const result = summary.find(t => t.order_id === order)
+        const details = result.details
+        //console.log(result)
+        api.get(`/getnet/find-transaction/${result.order_id}`)
+            .then((res) => {
+                setSingle({
+                    gn: result,
+                    dt: details,
+                    bd: res.data
+                })
+                toggle()
+            }).catch((err) => {
+
+            });
+    }
+
+
+
     const TransactionsType = ["Crédito à vista", "Crédito Parcelado", "Crédito Parcelamento Administradora", "Débito,", "Cancelamento", "Chargeback", "Boleto"]
     const TransactionsStatus = [{ id: 0, status: "Aprovado" }, { id: 70, status: "Aguardando" }, { id: 77, status: "Pendente" }, { id: 78, status: "Pendente de Pagamento" }, { id: 83, status: "Timeout" },
     { id: 90, status: "Inexistente" }, { id: 91, status: "Negado Administradora" }, { id: 92, status: "Estornada" }, { id: 93, status: "Repetida" }, { id: 94, status: "Estornada Conciliação" }, { id: 98, status: "Cancelada - Sem Confirmação" }, { id: 99, status: "Negado - MGM" },]
@@ -38,11 +67,11 @@ const TableTranctions = (props) => {
             },
             MUIDataTableBodyRow: {
                 root: {
-                  '&:nth-child(odd)': { 
-                    backgroundColor: '#f6f8fa'
-                  }
+                    '&:nth-child(odd)': {
+                        backgroundColor: '#f6f8fa'
+                    }
                 }
-              },
+            },
             MUIDataTableBodyCell: {
                 root: {
                     padding: "5px"
@@ -118,6 +147,13 @@ const TableTranctions = (props) => {
             options: {
                 filter: false,
             }
+        },        
+        {
+            label: "Subseller",
+            name: "marketplace_subsellerid",
+            options: {
+                filter: true,
+            }
         },
         {
             label: "Tipo de Transação",
@@ -128,17 +164,11 @@ const TableTranctions = (props) => {
             }
         },
         {
-            label: "Subseller",
-            name: "marketplace_subsellerid",
-            options: {
-                filter: true,
-            }
-        },
-        {
             label: "Valor",
             name: "card_payment_amount",
             options: {
                 filter: false,
+                customBodyRender: (value) => (<>{formatCurrency(value / 100)}</>)
             }
         },
         {
@@ -163,6 +193,18 @@ const TableTranctions = (props) => {
                 }
             }
         },
+        {
+            label: "Ver",
+            name: "order_id",
+            options: {
+                filter: false,
+                customBodyRender: (value) => (
+                    <Button size="sm" color="primary" onClick={() => getDetails(value)} >
+                        Detalhes
+                    </Button >
+                )
+            }
+        },
 
     ]
     const components = {
@@ -171,17 +213,49 @@ const TableTranctions = (props) => {
             return <ExpandButton {...props} />;
         }
     };
-    
+
     return (
         <>
             <MuiThemeProvider theme={getMuiTheme()}>
                 <MUIDataTable
+                    title={"Transações do período"}
                     data={summary}
                     columns={dataCols}
                     options={options}
                     components={components}
                 />
             </MuiThemeProvider>
+            <Modal size={"lg"} isOpen={modal} toggle={toggle} >
+                <ModalHeader toggle={toggle} charCode="X">Detalhes da Transação</ModalHeader>
+                <ModalBody>
+                    {single &&
+                        <div className="transaction">
+                            <Row>
+                                <Col xs="2">Subseller:</Col>
+                                <Col xs="4"><strong>{single?.gn.marketplace_subsellerid}</strong></Col>
+                                <Col xs="2">CNPJ/CPF:</Col>
+                                <Col><strong>{formatCNPJ(single?.bd.orders.shop.user.document)}</strong></Col>
+                            </Row>
+                            <Row>
+                                <Col xs="2">Cliente:</Col>
+                                <Col><strong>{single?.bd.orders.shop.user.legalName}</strong></Col>
+                            </Row>
+                            <hr className="m-1" />
+                            <Row>
+                                <Col xs="2">Comprador:</Col>
+                                <Col xs="4"><strong>{single?.bd.orders.customer.name}</strong></Col>
+                                <Col xs="2">CPF:</Col>
+                                <Col><strong>{formatCPF(single?.bd.orders.customer.document)}</strong></Col>
+                            </Row>
+                            
+                            <hr className="m-1"/>
+                        </div>}
+                </ModalBody>
+                <ModalFooter>
+                    
+                    <Button color="secondary" onClick={toggle}>Fechar</Button>
+                </ModalFooter>
+            </Modal>
         </>
     )
 }
