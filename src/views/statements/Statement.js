@@ -31,7 +31,10 @@ const Statement = () => {
         }
         loadingData();
     }, [init, end])
-    console.log(init);
+    const setRange = (e) => {
+       setInit(moment(e.start).format());
+       setEnd(moment(e.end).format())
+    }
     return (
         <>
             <Header />
@@ -77,7 +80,7 @@ const Statement = () => {
                                                     <Col>
                                                     <Row>
                                                         <Col xs="6">
-                                                        <DatetimeRangePicker className="d-flex" inline={true} startDate={init} endDate={end} locale="pt-br" pickerClassName="col-6" />
+                                                        <DatetimeRangePicker className="d-flex" inline={true} startDate={init} endDate={end} locale="pt-br" pickerClassName="col-6" onChange={setRange} />
                                                         </Col>
                                                     </Row>
                                                     <TableTransactions transactions={transactions} />
