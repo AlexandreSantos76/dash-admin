@@ -17,6 +17,7 @@ import TableTransactions from "components/Statements/TableTransactions"
 const Statement = () => {
     const [activeTable, setActiveTable] = useState(1)
     const [transactions, setTransations] = useState([])
+    const [orders, setOrders] = useState([])
     const [comissions, setComissions] = useState([])
     const [chargebacks, setChargebacks] = useState([])
     const [init, setInit] = useState(moment().clone().startOf('month').format())
@@ -25,9 +26,10 @@ const Statement = () => {
     useEffect(() => {
         async function loadingData() {
             let statements = await statement({ init: init, end: end })
-            setTransations(statements.list_transactions)
-            setComissions(statements.commission)
-            setChargebacks(statements.chargeback)
+            setTransations(statements.transactions.list_transactions)
+            setComissions(statements.transactions.commission)
+            setChargebacks(statements.transactions.chargeback)
+            setOrders(statements.orders)
         }
         loadingData();
     }, [init, end])
@@ -83,7 +85,7 @@ const Statement = () => {
                                                         <DatetimeRangePicker className="d-flex" inline={true} startDate={init} endDate={end} locale="pt-br" pickerClassName="col-6" onChange={setRange} />
                                                         </Col>
                                                     </Row>
-                                                    <TableTransactions transactions={transactions} />
+                                                    <TableTransactions transactions={transactions} orders={orders} comissions={comissions} />
                                                     </Col>
                                                 </Row>
                                             </CardBody>
