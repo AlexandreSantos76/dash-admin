@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import api from 'services/api';
 import { toast } from 'react-toastify';
+import prettier from "prettier/standalone";
+import babylon from "prettier/parser-babel";
 
 const UsersContext = createContext();
 
@@ -36,6 +38,14 @@ function UsersProvider({ children }) {
       }
       if (error.response.status === 402){
           toast.error("Ocorreu um erro cadastro getnet" )
+      }
+      if (error.response.status===403){
+        let msg = error.response.data
+        const formattedCode = prettier.format(msg, {
+          parser: "babel",
+          plugins: [babylon]
+        });
+        toast.error(formattedCode )
       }
     }
 

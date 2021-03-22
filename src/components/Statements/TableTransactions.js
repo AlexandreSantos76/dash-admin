@@ -22,6 +22,7 @@ const TableTranctions = (props) => {
     useEffect(() => {
         function getSumary() {
             let data = props.transactions
+            let orders = props.orders
             let arraySum = []
             data?.forEach((value) => {
                 let sum = value.summary
