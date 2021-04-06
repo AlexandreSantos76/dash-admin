@@ -12,12 +12,14 @@ import classnames from 'classnames';
 import TabContent from "reactstrap/lib/TabContent";
 import TabPane from "reactstrap/lib/TabPane";
 import TableTransactions from "components/Statements/TableTransactions"
+import TableRefuseds from "components/Statements/TableRefuseds";
 
 
 const Statement = () => {
     const [activeTable, setActiveTable] = useState(1)
     const [transactions, setTransations] = useState([])
     const [orders, setOrders] = useState([])
+    const [refuseds, setRefuseds] = useState([])
     const [comissions, setComissions] = useState([])
     const [chargebacks, setChargebacks] = useState([])
     const [init, setInit] = useState(moment().clone().startOf('month').format())
@@ -26,7 +28,8 @@ const Statement = () => {
     useEffect(() => {
         async function loadingData() {
             let statements = await statement({ init: init, end: end })
-            let refuseds = await  refused({ init: init, end: end })
+            let refuseds = await refused({ init: init, end: end })
+            setRefuseds(refuseds.orders)
             setTransations(statements.transactions.list_transactions)
             setComissions(statements.transactions.commission)
             setChargebacks(statements.transactions.chargeback)
@@ -35,8 +38,8 @@ const Statement = () => {
         loadingData();
     }, [init, end])
     const setRange = (e) => {
-       setInit(moment(e.start).format());
-       setEnd(moment(e.end).format())
+        setInit(moment(e.start).format());
+        setEnd(moment(e.end).format())
     }
     return (
         <>
@@ -81,12 +84,12 @@ const Statement = () => {
                                             <CardBody>
                                                 <Row>
                                                     <Col>
-                                                    <Row>
-                                                        <Col xs="6">
-                                                        <DatetimeRangePicker className="d-flex" inline={true} startDate={init} endDate={end} locale="pt-br" pickerClassName="col-6" onChange={setRange} />
-                                                        </Col>
-                                                    </Row>
-                                                    <TableTransactions transactions={transactions} orders={orders} comissions={comissions} />
+                                                        <Row>
+                                                            <Col xs="6">
+                                                                <DatetimeRangePicker className="d-flex" inline={true} startDate={init} endDate={end} locale="pt-br" pickerClassName="col-6" onChange={setRange} />
+                                                            </Col>
+                                                        </Row>
+                                                        <TableTransactions transactions={transactions} orders={orders} comissions={comissions} />
                                                     </Col>
                                                 </Row>
                                             </CardBody>
@@ -95,7 +98,22 @@ const Statement = () => {
                                 </Row>
                             </TabPane>
                             <TabPane tabId={2}>Comissões</TabPane>
-                            <TabPane tabId={3}>Transações Negadas</TabPane>
+                            <TabPane tabId={3}>
+                                <Row>
+                                    <Col>
+                                        <Card style={{ border: "0", boxShadow: "none" }}>
+                                            <CardBody>
+                                                <Row>
+                                                    <Col>
+                                                    {refuseds&&<TableRefuseds orders={refuseds} />}
+                                                    </Col>
+                                                </Row>
+                                            </CardBody>
+                                        </Card>
+                                    </Col>
+                                </Row>
+
+                            </TabPane>
                         </TabContent>
                     </Col>
 
