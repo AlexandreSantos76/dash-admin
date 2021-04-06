@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Card, Container, Row, CardBody } from "reactstrap";
 import Header from "components/Headers/HeaderClear";
-import { statement } from "../../hooks/billings"
+import { statement, refused } from "../../hooks/billings"
 import moment from "moment"
 import DatetimeRangePicker from 'react-datetime-range-picker';
 
@@ -26,6 +26,7 @@ const Statement = () => {
     useEffect(() => {
         async function loadingData() {
             let statements = await statement({ init: init, end: end })
+            let refuseds = await  refused({ init: init, end: end })
             setTransations(statements.transactions.list_transactions)
             setComissions(statements.transactions.commission)
             setChargebacks(statements.transactions.chargeback)
@@ -66,7 +67,7 @@ const Statement = () => {
                                         <NavLink
                                             className={classnames({ active: activeTable === 3 })}
                                             onClick={() => { setActiveTable(3); }}>
-                                            Chargebacks
+                                            Transações Negadas
                                         </NavLink>
                                     </NavItem>
                                 </Nav>
@@ -94,7 +95,7 @@ const Statement = () => {
                                 </Row>
                             </TabPane>
                             <TabPane tabId={2}>Comissões</TabPane>
-                            <TabPane tabId={3}>Chargebacks</TabPane>
+                            <TabPane tabId={3}>Transações Negadas</TabPane>
                         </TabContent>
                     </Col>
 

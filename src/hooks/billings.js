@@ -8,3 +8,11 @@ export const statement = (props) => {
             console.log(err);
         });
 }
+export const refused = (props) => {
+    return Api.get(`gateway/statement-refuseds?transaction_date_end=${props.init}&transaction_date_end=${props.end}`)
+        .then((result) => {
+            return result.data
+        }).catch((err) => {
+            console.log(err);
+        });
+}
