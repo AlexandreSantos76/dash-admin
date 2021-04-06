@@ -5,7 +5,7 @@ export default function MyCoolCodeBlock({ code }) {
     console.log(code);
     return (
         <CodeBlock
-            text={code !== null ? JSON.stringify(JSON.parse(code), null, 2) : ""}
+            text={code}
             theme={dracula}
             language="json"
             wrapLines
