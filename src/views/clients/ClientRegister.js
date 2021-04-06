@@ -18,8 +18,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import api from "services/api";
-import { toast } from "react-toastify";
 
 const schemaPersonData = Yup.object().shape({
   legalName: Yup.string().required("Nome é um campo obrigatório.").min(8),
