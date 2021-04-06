@@ -103,6 +103,10 @@ const TableTranctions = (props) => {
         download: true,
         print: true,
         sort: true,
+        sortOrder: {
+            name: '"Data da Transação',
+            direction: 'desc'
+          },
         search: true,
         viewColumns: false,
         selectableRows: "none",
