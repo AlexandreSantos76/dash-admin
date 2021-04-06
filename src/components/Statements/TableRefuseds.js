@@ -32,8 +32,8 @@ const TableRefuseds = (props) => {
                     seller: order.shop.user.document,
                     value: order.valueTotal,
                     create: order.createdAt,
-                    request:order.transations?.request,
-                    response:order.transations?.response
+                    request:order.transations.hasOwnProperty("request")?order.transations.request:null,
+                    response:order.transations.hasOwnProperty("response")?order.transations.response:null
                 }
                 arraySum.push(sum)
             })
