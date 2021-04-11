@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useHistory } from 'react-router-dom'
+import { useHistory } from "react-router-dom";
 
 // reactstrap components
 import {
@@ -12,32 +12,30 @@ import {
   DropdownItem,
   UncontrolledDropdown,
   DropdownToggle,
-  Media,
   Pagination,
   PaginationItem,
   PaginationLink,
   Table,
   Container,
   Row,
-  CardBody
+  CardBody,
 } from "reactstrap";
 // core components
 
-import { useUsers } from '../../hooks/users'
-import { useGateway } from '../../hooks/getnet'
+import { useUsers } from "../../hooks/users";
+import { useGateway } from "../../hooks/getnet";
 
 import Header from "components/Headers/Header.js";
 
-import api from '../../services/api';
+import api from "../../services/api";
 
 function Clients() {
-  const gateway = useGateway()
+  const gateway = useGateway();
   const history = useHistory();
   const { saveSelectedUserId } = useUsers();
 
   const [clients, setClients] = useState([]);
-  const [filter, setFilter] = useState(1)
-
+  const [filter, setFilter] = useState(1);
 
   useEffect(() => {
     async function loadingClients() {
@@ -45,32 +43,35 @@ function Clients() {
       setClients(response.data);
     }
     loadingClients();
-  }, [filter])
+  }, [filter]);
 
-  const handleProfile = useCallback((client) => {
-    saveSelectedUserId(client.id);
-    history.push('/admin/client-profile')
-  }, [history, saveSelectedUserId])
+  const handleProfile = useCallback(
+    (client) => {
+      saveSelectedUserId(client.id);
+      history.push("/admin/client-profile");
+    },
+    [history, saveSelectedUserId]
+  );
 
   const handleCallback = async (document, type, index) => {
-    let { status, data } = await gateway.callback(document, type)
+    let { status, data } = await gateway.callback(document, type);
     console.log(status);
     if (status) {
-      let newArr = [...clients]
-      newArr[index].subseller.enabled = data.enabled
-      newArr[index].subseller.status = data.status
+      let newArr = [...clients];
+      newArr[index].subseller.enabled = data.enabled;
+      newArr[index].subseller.status = data.status;
       console.log(newArr[index]);
-      setClients(newArr)
+      setClients(newArr);
     }
-  }
+  };
 
   const handleFilter = async (filter) => {
-    setFilter(filter)
-  }
+    setFilter(filter);
+  };
 
   const handleNewClient = useCallback(() => {
-    history.push(`/admin/client-register`)
-  }, [history])
+    history.push(`/admin/client-register`);
+  }, [history]);
 
   return (
     <>
@@ -81,21 +82,44 @@ function Clients() {
         <Row>
           <div className="col">
             <Card className="shadow">
-              <CardHeader className="border-0 d-flex align-items-center justify-content-between" >
+              <CardHeader className="border-0 d-flex align-items-center justify-content-between">
                 <h3 className="mb-0">Clientes</h3>
                 <div>
-                  <Button color='primary' onClick={handleNewClient}>Cadastrar</Button>
+                  <Button color="primary" onClick={handleNewClient}>
+                    Cadastrar
+                  </Button>
                 </div>
               </CardHeader>
               <CardBody>
                 <div className="status d-flex ">
-                  <a className={`order-status order-status-paid`} href="#mon" onClick={e => { e.preventDefault(); handleFilter(1) }} >
+                  <a
+                    className={`order-status order-status-paid`}
+                    href="#mon"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleFilter(1);
+                    }}
+                  >
                     <strong>Clientes Ativos</strong>
                   </a>
-                  <a className={`order-status order-status-waiting_payment`} href="#anc" onClick={e => { e.preventDefault(); handleFilter(2) }}>
+                  <a
+                    className={`order-status order-status-waiting_payment`}
+                    href="#anc"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleFilter(2);
+                    }}
+                  >
                     <strong>Clientes Aguardando Liberação</strong>
                   </a>
-                  <a className={`order-status order-status-cancelled`} href="#mon" onClick={e => { e.preventDefault(); handleFilter(3) }}>
+                  <a
+                    className={`order-status order-status-cancelled`}
+                    href="#mon"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleFilter(3);
+                    }}
+                  >
                     <strong>Clientes Cancelados</strong>
                   </a>
                 </div>
@@ -103,9 +127,10 @@ function Clients() {
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
+                    <th scope="col">ID</th>
                     <th scope="col">Empresa</th>
                     <th scope="col">Plano</th>
-                    <th scope="col">Pagamento</th>
+                    <th scope="col">CNPJ/CPF</th>
                     <th scope="col">Status</th>
                     <th scope="col" />
                   </tr>
@@ -113,22 +138,24 @@ function Clients() {
                 <tbody>
                   {clients.map((client, index) => (
                     <tr key={client.id}>
+                      <td>
+                        <span className="mb-0 text-sm">{client.id}</span>
+                      </td>
                       <th scope="row">
-                        <span className="mb-0 text-sm">
-                          {client.name}
-                        </span>
+                        <span className="mb-0 text-sm">{client.name}</span>
                       </th>
                       <td>{client.plan ? client.plan.name : "Sem Plano"}</td>
-                      <td>
-                        <Badge color="" className="badge-dot mr-4">
-                          <i className={client.paymentStatus === 'ok' ? "bg-success" : "bg-warning"} />
-                          {client.paymentStatus}
-                        </Badge>
-                      </td>
+                      <td>{client.document}</td>
 
                       <td>
                         <Badge color="" className="badge-dot mr-4">
-                          <i className={client.subseller.enabled === "S" ? "bg-success" : "bg-warning"} />
+                          <i
+                            className={
+                              client.subseller.enabled === "S"
+                                ? "bg-success"
+                                : "bg-warning"
+                            }
+                          />
                           {client.subseller.status}
                         </Badge>
                       </td>
@@ -144,29 +171,26 @@ function Clients() {
                             <i className="fas fa-ellipsis-v" />
                           </DropdownToggle>
                           <DropdownMenu className="dropdown-menu-arrow" right>
-                            <DropdownItem
-                              onClick={() => handleProfile(client)}
-                            >
+                            <DropdownItem onClick={() => handleProfile(client)}>
                               Ver perfil
                             </DropdownItem>
                             <DropdownItem
-                              onClick={
-                                e => {
-                                  e.preventDefault()
-                                  handleCallback(client.document, client.type, index)
-                                }
-                              }
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleCallback(
+                                  client.document,
+                                  client.type,
+                                  index
+                                );
+                              }}
                             >
                               Atualizar Situação
                             </DropdownItem>
-                            
                           </DropdownMenu>
                         </UncontrolledDropdown>
                       </td>
                     </tr>
-
                   ))}
-
                 </tbody>
               </Table>
               <CardFooter className="py-4">
@@ -178,7 +202,7 @@ function Clients() {
                     <PaginationItem className="disabled">
                       <PaginationLink
                         href="#"
-                        onClick={e => e.preventDefault()}
+                        onClick={(e) => e.preventDefault()}
                         tabIndex="-1"
                       >
                         <i className="fas fa-angle-left" />
@@ -188,16 +212,16 @@ function Clients() {
                     <PaginationItem className="active">
                       <PaginationLink
                         href="#"
-                        onClick={e => e.preventDefault()}
+                        onClick={(e) => e.preventDefault()}
                       >
                         1
                       </PaginationLink>
                     </PaginationItem>
-                   
+
                     <PaginationItem>
                       <PaginationLink
                         href="#"
-                        onClick={e => e.preventDefault()}
+                        onClick={(e) => e.preventDefault()}
                       >
                         <i className="fas fa-angle-right" />
                         <span className="sr-only">Next</span>
@@ -213,6 +237,5 @@ function Clients() {
     </>
   );
 }
-
 
 export default Clients;
