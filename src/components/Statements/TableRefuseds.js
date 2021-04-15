@@ -7,7 +7,7 @@ import moment from "moment";
 import DatetimeRangePicker from "react-datetime-range-picker";
 import "moment/locale/pt-br";
 import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from "reactstrap";
-import { formatCurrency } from "utils/FormateUtils";
+import { formatCurrency, formatCNPJ } from "utils/FormateUtils";
 import CodeComponent from "hooks/CodeBlock";
 import Row from "reactstrap/lib/Row";
 import Col from "reactstrap/lib/Col";
@@ -28,7 +28,7 @@ const TableRefuseds = (props) => {
       data?.forEach((order) => {
         let sum = {
           id: order.id,
-          seller: order.shop.user.document,
+          seller: {document:order.shop.user.document, name:order.shop.user.legalName},
           value: order.valueTotal,
           create: order.createdAt,
           request:
@@ -124,11 +124,16 @@ const TableRefuseds = (props) => {
         filter: false,
       },
     },
+    
     {
       label: "Subseller",
       name: "seller",
       options: {
         filter: true,
+        customBodyRender: (value) => <>
+        {value.name}<br/>
+        <span className="text-muted">{formatCNPJ(value.document)}</span>
+        </>,
       },
     },
 
