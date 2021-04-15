@@ -19,7 +19,6 @@ const Statement = () => {
     const [activeTable, setActiveTable] = useState(1)
     const [transactions, setTransations] = useState([])
     const [orders, setOrders] = useState([])
-    const [refuseds, setRefuseds] = useState([])
     const [comissions, setComissions] = useState([])
     const [chargebacks, setChargebacks] = useState([])
     const [init, setInit] = useState(moment().clone().startOf('month').format())
@@ -28,8 +27,6 @@ const Statement = () => {
     useEffect(() => {
         async function loadingData() {
             let statements = await statement({ init: init, end: end })
-            let refuseds = await refused({ init: init, end: end })
-            setRefuseds(refuseds.orders)
             setTransations(statements.transactions.list_transactions)
             setComissions(statements.transactions.commission)
             setChargebacks(statements.transactions.chargeback)
@@ -105,7 +102,7 @@ const Statement = () => {
                                             <CardBody>
                                                 <Row>
                                                     <Col>
-                                                    {refuseds&&<TableRefuseds orders={refuseds} />}
+                                                    <TableRefuseds />
                                                     </Col>
                                                 </Row>
                                             </CardBody>

@@ -2,22 +2,28 @@ import React, { useState, useEffect } from "react";
 import "fontsource-roboto";
 import MUIDataTable, { ExpandButton } from "mui-datatables";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
-import TableRow from "@material-ui/core/TableRow";
-import TableCell from "@material-ui/core/TableCell";
-import Table from "reactstrap/lib/Table";
+import { refused } from "../../hooks/billings";
 import moment from "moment";
+import DatetimeRangePicker from "react-datetime-range-picker";
 import "moment/locale/pt-br";
 import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from "reactstrap";
 import { formatCurrency } from "utils/FormateUtils";
 import CodeComponent from "hooks/CodeBlock";
+import Row from "reactstrap/lib/Row";
+import Col from "reactstrap/lib/Col";
+import CardBody from "reactstrap/lib/CardBody";
+import Card from "reactstrap/lib/Card";
 
 const TableRefuseds = (props) => {
   const [transactions, setTransactions] = useState();
   const [modal, setModal] = useState(false);
   const [code, setCode] = useState();
+  const [init, setInit] = useState(moment().clone().startOf("month").format());
+  const [end, setEnd] = useState(moment().format());
   useEffect(() => {
-    function getSumary() {
-      let data = props.orders;
+    async function getSumary() {
+      let refuseds = await refused({ init: init, end: end });
+      let data = refuseds.orders;
       let arraySum = [];
       data?.forEach((order) => {
         let sum = {
@@ -39,7 +45,11 @@ const TableRefuseds = (props) => {
       setTransactions(arraySum);
     }
     getSumary();
-  }, [props]);
+  }, [end, init]);
+  const setRange = (e) => {
+    setInit(moment(e.start).format());
+    setEnd(moment(e.end).format());
+  };
   const toggle = () => setModal(!modal);
   const getMuiTheme = () =>
     createMuiTheme({
@@ -71,12 +81,12 @@ const TableRefuseds = (props) => {
         },
         MUIDataTableHeadCell: {
           root: {
-            '&:nth-child(5)': {
-                width: "70px"
-              },
-              '&:nth-child(6)': {
-                width: "70px"
-              }
+            "&:nth-child(5)": {
+              width: "70px",
+            },
+            "&:nth-child(6)": {
+              width: "70px",
+            },
           },
           fixedHeader: {
             backgroundColor: "#FF0000",
@@ -105,7 +115,6 @@ const TableRefuseds = (props) => {
         noMatch: "Nenhum registro encontrado",
       },
     },
-    
   };
   const dataCols = [
     {
@@ -195,15 +204,44 @@ const TableRefuseds = (props) => {
 
   return (
     <>
-      <MuiThemeProvider theme={getMuiTheme()}>
-        <MUIDataTable
-          title={"Transações do período"}
-          data={transactions}
-          columns={dataCols}
-          options={options}
-          components={components}
-        />
-      </MuiThemeProvider>
+      <Row>
+        <Col>
+          <Card style={{ border: "0", boxShadow: "none" }}>
+            <CardBody>
+              <Row>
+                <Col>
+                  <Row>
+                    <Col xs="6">
+                      <DatetimeRangePicker
+                        className="d-flex"
+                        inline={true}
+                        startDate={init}
+                        endDate={end}
+                        locale="pt-br"
+                        pickerClassName="col-6"
+                        onChange={setRange}
+                      />
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <MuiThemeProvider theme={getMuiTheme()}>
+                        <MUIDataTable
+                          title={"Transações do período"}
+                          data={transactions}
+                          columns={dataCols}
+                          options={options}
+                          components={components}
+                        />
+                      </MuiThemeProvider>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
       <Modal size={"lg"} isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle} charCode="X">
           Detalhes da Transação
