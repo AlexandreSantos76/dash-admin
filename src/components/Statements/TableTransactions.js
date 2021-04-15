@@ -111,9 +111,9 @@ const TableTranctions = (props) => {
                 noMatch: "Nenhum registro encontrado"
             }
         },
-        expandableRows: false,
+        expandableRows: true,
         expandableRowsHeader: false,
-        expandableRowsOnClick: false,
+        expandableRowsOnClick: true,
         isRowExpandable: (dataIndex, expandedRows) => {
             if (dataIndex === 3 || dataIndex === 4) return false;
             if (expandedRows.data.length > 4 && expandedRows.data.filter(d => d.dataIndex === dataIndex).length === 0) return false;
@@ -123,17 +123,15 @@ const TableTranctions = (props) => {
             const colSpan = rowData.length + 1;
             return (
                 <TableRow>
-                    <TableCell colSpan={colSpan}>
-                        Para utilizar este domínio no seu checkout, adicione o registro DNS abaixo no serviço em que você registrou o seu domínio
-                    <div style={{ backgroundColor: "#e7fee8", borderLeftColor: "#07ab0e", borderLeftWidth: "3px" }}>
-                            <Table>
+                    <TableCell colSpan={colSpan} className="text-right " >
+                       
+                            <Table style={{width:"400px", float:"right"}} >
                                 <tbody>
-                                    <tr><td><strong>TIPO:</strong></td><td>CNAME</td></tr>
-                                    <tr><td><strong>NOME:</strong></td><td>seguro</td></tr>
-                                    <tr><td><strong>DESTINO:</strong></td><td>cname.vercel-dns.com</td></tr>
+                                    <tr><td><strong>Taxa Getnet:</strong></td><td>{formatCurrency(0)}</td></tr>
+                                    <tr><td><strong>Comissão</strong></td><td>{formatCurrency(0)}</td></tr>
+                                    <tr><td><strong>Juros</strong></td><td>{formatCurrency(0)}</td></tr>
                                 </tbody>
                             </Table>
-                        </div>
                     </TableCell>
                 </TableRow>
             );
