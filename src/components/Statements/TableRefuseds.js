@@ -13,7 +13,6 @@ import CodeComponent from "hooks/CodeBlock";
 
 const TableRefuseds = (props) => {
   const [transactions, setTransactions] = useState();
-  const [shop, setSingle] = useState();
   const [modal, setModal] = useState(false);
   const [code, setCode] = useState();
   useEffect(() => {
@@ -98,10 +97,6 @@ const TableRefuseds = (props) => {
     download: true,
     print: true,
     sort: true,
-    sortOrder: {
-      name: '"Data da Transação',
-      direction: "desc",
-    },
     search: true,
     viewColumns: false,
     selectableRows: "none",
@@ -110,61 +105,7 @@ const TableRefuseds = (props) => {
         noMatch: "Nenhum registro encontrado",
       },
     },
-    expandableRows: false,
-    expandableRowsHeader: false,
-    expandableRowsOnClick: false,
-    isRowExpandable: (dataIndex, expandedRows) => {
-      if (dataIndex === 3 || dataIndex === 4) return false;
-      if (
-        expandedRows.data.length > 4 &&
-        expandedRows.data.filter((d) => d.dataIndex === dataIndex).length === 0
-      )
-        return false;
-      return true;
-    },
-    renderExpandableRow: (rowData, rowMeta) => {
-      const colSpan = rowData.length + 1;
-      return (
-        <TableRow>
-          <TableCell colSpan={colSpan}>
-            Para utilizar este domínio no seu checkout, adicione o registro DNS
-            abaixo no serviço em que você registrou o seu domínio
-            <div
-              style={{
-                backgroundColor: "#e7fee8",
-                borderLeftColor: "#07ab0e",
-                borderLeftWidth: "3px",
-              }}
-            >
-              <Table>
-                <tbody>
-                  <tr>
-                    <td>
-                      <strong>TIPO:</strong>
-                    </td>
-                    <td>CNAME</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>NOME:</strong>
-                    </td>
-                    <td>seguro</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>DESTINO:</strong>
-                    </td>
-                    <td>cname.vercel-dns.com</td>
-                  </tr>
-                </tbody>
-              </Table>
-            </div>
-          </TableCell>
-        </TableRow>
-      );
-    },
-    onRowExpansionChange: (curExpanded, allExpanded, rowsExpanded) =>
-      console.log(curExpanded, allExpanded, rowsExpanded),
+    
   };
   const dataCols = [
     {
