@@ -8,12 +8,7 @@ import Table from 'reactstrap/lib/Table';
 import moment from 'moment'
 import 'moment/locale/pt-br'
 import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
-import { formatCNPJ } from 'utils/FormateUtils';
 import { formatCurrency } from 'utils/FormateUtils';
-import api from 'services/api';
-import Row from 'reactstrap/lib/Row';
-import Col from 'reactstrap/lib/Col';
-import { formatCPF } from 'utils/FormateUtils';
 import CodeComponent from 'hooks/CodeBlock';
 
 const TableRefuseds = (props) => {
@@ -23,7 +18,6 @@ const TableRefuseds = (props) => {
     const [code,setCode] = useState()
     useEffect(() => {
         function getSumary() {
-            console.log(props.orders);
             let data = props.orders
             let arraySum = []
             data?.forEach((order) => {
@@ -43,10 +37,6 @@ const TableRefuseds = (props) => {
         getSumary()
     }, [props])
     const toggle = () => setModal(!modal);
-
-
-
-
     const getMuiTheme = () => createMuiTheme({
         shadows: Array(25).fill('none'),
         overrides: {

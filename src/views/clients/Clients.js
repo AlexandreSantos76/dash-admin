@@ -144,8 +144,8 @@ function Clients() {
                       <th scope="row">
                         <span className="mb-0 text-sm">{client.name}</span>
                       </th>
-                      <td>{client.plan ? client.plan.name : "Sem Plano"}</td>
                       <td>{client.document}</td>
+                      <td>{client.plan ? client.plan.name : "Sem Plano"}</td>
 
                       <td>
                         <Badge color="" className="badge-dot mr-4">

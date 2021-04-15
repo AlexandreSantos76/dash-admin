@@ -62,14 +62,14 @@ const Statement = () => {
                                     <NavItem>
                                         <NavLink
                                             className={classnames({ active: activeTable === 2 })}
-                                            onClick={() => { setActiveTable(2); }}>
+                                            onClick={() => { setActiveTable(2); }} style={{cursor:"pointer"}}>
                                             Comissões
                                         </NavLink>
                                     </NavItem>
                                     <NavItem>
                                         <NavLink
-                                            className={classnames({ active: activeTable === 3 })}
-                                            onClick={() => { setActiveTable(3); }}>
+                                            className={classnames({ active: activeTable === 3},'text-red')}
+                                            onClick={() => { setActiveTable(3); }} style={{cursor:"pointer"}}>
                                             Transações Negadas
                                         </NavLink>
                                     </NavItem>
