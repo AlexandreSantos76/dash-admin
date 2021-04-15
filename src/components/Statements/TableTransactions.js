@@ -50,6 +50,7 @@ const TableTranctions = (props) => {
       })
       .catch((err) => {});
   };
+  const handleDetails = (transaction) => {};
 
   const TransactionsType = [
     "Crédito à vista",
@@ -84,6 +85,13 @@ const TableTranctions = (props) => {
             // Soft hide the button.
             visibility: "hidden",
           },
+          root:{
+            backgroundColor: "#e9e9e9",
+            padding: "5px",
+          },
+          body:{              
+            border:"1px solid rgba(224, 224, 224, 1)"
+          }
         },
         MUIDataTableBodyRow: {
           root: {
@@ -102,7 +110,35 @@ const TableTranctions = (props) => {
             backgroundColor: "#FF0000",
           },
         },
+        MuiTableSortLabel: {
+          root: {
+            color: "#ffffff",
+            "&:hover": {
+              color: "#ffffff",
+
+              "&& $icon": {
+                opacity: 1,
+                color: "#ffffff",
+              },
+            },
+            "&$active": {
+              color: "#ffffff",
+
+              // && instead of & is a workaround for https://github.com/cssinjs/jss/issues/1045
+              "&& $icon": {
+                opacity: 1,
+                color: "#ffffff",
+              },
+            },
+          },
+        },
         MUIDataTableHeadCell: {
+          sortActive: {
+            color: "#ffffff",
+          },
+          sortAction: {
+            color: "#ffffff",
+          },
           fixedHeader: {
             backgroundColor: "#FF0000",
             padding: "5px",
@@ -112,6 +148,7 @@ const TableTranctions = (props) => {
             fontWeight: "bold",
           },
         },
+        
       },
     });
   const options = {
@@ -146,7 +183,7 @@ const TableTranctions = (props) => {
         return false;
       return true;
     },
-    renderExpandableRow: (rowData, rowMeta) => {
+    renderExpandableRow: (rowData, rowMeta, dataIndex) => {
       const colSpan = rowData.length + 1;
       return (
         <TableRow>
@@ -237,7 +274,7 @@ const TableTranctions = (props) => {
       name: "order_id",
       options: {
         filter: false,
-        sort:false,
+        sort: false,
         customBodyRender: (value) => (
           <Button size="sm" color="primary" onClick={() => getDetails(value)}>
             Detalhes
