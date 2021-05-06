@@ -13,6 +13,7 @@ import TabContent from "reactstrap/lib/TabContent";
 import TabPane from "reactstrap/lib/TabPane";
 import TableTransactions from "components/Statements/TableTransactions"
 import TableRefuseds from "components/Statements/TableRefuseds";
+import TableLiquidations from "components/Statements/TableLiquidation";
 
 
 const Statement = () => {
@@ -94,7 +95,21 @@ const Statement = () => {
                                     </Col>
                                 </Row>
                             </TabPane>
-                            <TabPane tabId={2}>Comissões</TabPane>
+                            <TabPane tabId={2}>
+                            <Row>
+                                    <Col>
+                                        <Card style={{ border: "0", boxShadow: "none" }}>
+                                            <CardBody>
+                                                <Row>
+                                                    <Col>
+                                                    <TableLiquidations />
+                                                    </Col>
+                                                </Row>
+                                            </CardBody>
+                                        </Card>
+                                    </Col>
+                                </Row>
+                            </TabPane>
                             <TabPane tabId={3}>
                                 <Row>
                                     <Col>
