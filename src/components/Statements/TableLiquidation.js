@@ -62,7 +62,6 @@ const TableLiquidations = () => {
 
   const getOrder = async (payment) => {
     let ordId = await responses.find((o) => o.payment_id === payment);
-    console.log(ordId.order_id);
     let order = await orders.find((o) => o.id === parseInt(ordId.order_id));
     return order;
   };
@@ -92,17 +91,21 @@ const TableLiquidations = () => {
             <tr>
               <th>Pedido</th>
               <th>Produto</th>
-              <th>Valor</th>
+              <th>Valor Total</th>
+              <th>MDR</th>
+              <th>Comissão</th>
             </tr>
           </thead>
           <tbody>
               {comissions.map((data,key)=>{
-                  //let order = getOrder(data)
+                  //let order = getOrder(data.payment_id)
                   return(
                       <tr key={key}>
-                          <td></td>
-                          <td></td>
-                          <td></td>
+                          <td>{data.payment_id}</td>
+                          <td>{data.item_id}</td>
+                          <td>{data.installment_amount}</td>
+                          <td>{data.mdr_rate_ammount}</td>
+                          <td>{data.subseller_rate_amount}</td>
                       </tr>
                   )
               })}
