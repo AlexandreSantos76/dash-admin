@@ -1,5 +1,6 @@
 {
     "name": "monetiz-pay-dashboard",
+    "homepage": ".",
     "version": "1.1.0",
     "description": "Dashboard",
     "main": "index.js",
@@ -12,6 +13,7 @@
         "start": "node scripts/start.js .env",
         "start-dev": "node scripts/start.js .env.development.local",
         "build": "node scripts/build.js",
+        "deploy": "aws s3 sync build/ s3://dash.converte.me --acl public-read",
         "test": "node scripts/test.js",
         "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start",
         "compile-sass": "node-sass src/assets/scss/argon-dashboard-react.scss src/assets/css/argon-dashboard-react.css",
