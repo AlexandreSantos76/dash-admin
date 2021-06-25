@@ -74,6 +74,7 @@
         "react-datetime-range-picker": "^3.0.0",
         "react-dev-utils": "^11.0.4",
         "react-dom": "16.12.0",
+        "react-dropdown": "^1.9.2",
         "react-hook-form": "^6.15.4",
         "react-lottie": "^1.2.3",
         "react-refresh": "^0.8.3",

@@ -35,7 +35,7 @@ function Users() {
             await api.get("/admin/users")
                 .then(result => {
                     let data = result.data
-                    
+
                     setUsers(result.data)
                 })
         }
@@ -50,12 +50,11 @@ function Users() {
     }
     const collGroup = useCallback((id) => {
         console.log(id);
-        let label = groups?.find(gr=>gr.id === id)
+        let label = groups?.find(gr => gr.id === id)
         return (
             label.name
         )
-    },[groups])
-    const teste = ["teste","teste2"]
+    }, [groups])
     const columnsGroups = [
         {
             dataField: 'name',
@@ -79,7 +78,7 @@ function Users() {
         {
             dataField: 'groupId',
             text: 'Grupo',
-            formatter: (cell, row) =>collGroup(cell)
+            //formatter: (cell, row) =>collGroup(cell)
         },
         {
             dataField: 'action',
@@ -135,11 +134,11 @@ function Users() {
             .then((result) => {
                 let data = result.data
                 setDeletedG(false)
-                setSelectGroup(old=>[])
+                setSelectGroup(old => [])
                 setDeleteGroup(false)
 
             }).catch((err) => {
-                
+
 
             });
     }
@@ -185,7 +184,7 @@ function Users() {
                                                                 />
                                                             </CardBody>
                                                             <CardFooter>
-                                                                <div><Button color="danger" size="sm" disabled={!deleteGroup} onClick={e=>onDeleteGroups(e)}> Excluir Selecionados</Button></div>
+                                                                <div><Button color="danger" size="sm" disabled={!deleteGroup} onClick={e => onDeleteGroups(e)}> Excluir Selecionados</Button></div>
                                                             </CardFooter>
                                                         </Card>
                                                         <Card className="shadow mt-3">

@@ -1,23 +1,23 @@
 import React, { useContext, createContext, useCallback, useState } from 'react';
 import api from 'services/api';
-import {useAuth} from 'hooks/auth'
+import { useAuth } from 'hooks/auth'
 
 
 const GatewayContext = createContext();
 
-function GatewayProvider({ children }){
+function GatewayProvider({ children }) {
 
   const auth = useAuth()
 
-  const callback = useCallback(async (document, type) => {
-    return api.get(`/gateway/callback?document=${document}&type=${type}`)
-    .then((result) => {
-      return ({status:true, data:result.data})
-      
-    }).catch((err) => {
-      console.log(err)
-    });
-  },[]);
+  const callback = useCallback(async (id) => {
+    return api.get(`/gateway/getnet/callback?id=${id}`)
+      .then((result) => {
+        return ({ status: true, data: result.data })
+
+      }).catch((err) => {
+        console.log(err)
+      });
+  }, []);
 
   const handlePreRegisterCpf = useCallback(async (data) => {
     const preRegisterData = {
@@ -52,10 +52,10 @@ function GatewayProvider({ children }){
     }
 
     const response = await api.post('gateway/pre-register/pf', preRegisterData)
-    
+
     return response.data;
-  
-  },[]);
+
+  }, []);
 
   const handlePreRegisterCnpj = useCallback(async (data) => {
     const preRegisterData = {
@@ -89,22 +89,22 @@ function GatewayProvider({ children }){
     }
 
     const response = await api.post('gateway/pre-register/pj', preRegisterData)
-    
+
     return response.data;
-  
-  },[])
+
+  }, [])
 
   return (
-    <GatewayContext.Provider value={{callback, handlePreRegisterCpf, handlePreRegisterCnpj}}>
+    <GatewayContext.Provider value={{ callback, handlePreRegisterCpf, handlePreRegisterCnpj }}>
       {children}
     </GatewayContext.Provider>
   )
 }
 
-function useGateway(){
+function useGateway() {
   const context = useContext(GatewayContext);
 
-  if(!context){
+  if (!context) {
     throw new Error('useGateway must be used within an Gateway Provider')
   }
 

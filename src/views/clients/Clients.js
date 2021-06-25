@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useHistory } from "react-router-dom";
-
+import { useHistory, Link } from "react-router-dom";
+import MUIDataTable, { ExpandButton } from "mui-datatables";
+import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 // reactstrap components
 import {
   Badge,
@@ -39,8 +40,22 @@ function Clients() {
 
   useEffect(() => {
     async function loadingClients() {
-      const response = await api.get(`/user?filter=${filter}`);
-      setClients(response.data);
+      const response = await api.get(`/users`);
+      let users = []
+      let data = response.data
+      for (let user of data) {
+        let newUser = {
+          id: user.id,
+          name: user.legalName,
+          document: user.document,
+          subseller: user.subseller.subsellerId,
+          plan: user.plan.name,
+          status: user.subseller.status
+        }
+        users.push(newUser)
+      }
+
+      setClients(users);
     }
     loadingClients();
   }, [filter]);
@@ -53,14 +68,13 @@ function Clients() {
     [history, saveSelectedUserId]
   );
 
-  const handleCallback = async (document, type, index) => {
-    let { status, data } = await gateway.callback(document, type);
-    console.log(status);
+  const handleCallback = async (id, row) => {
+
+    let { status, data } = await gateway.callback(id);
     if (status) {
       let newArr = [...clients];
-      newArr[index].subseller.enabled = data.enabled;
-      newArr[index].subseller.status = data.status;
-      console.log(newArr[index]);
+      newArr[row.rowIndex].status = data.status;
+      console.log(newArr[row.rowIndex]);
       setClients(newArr);
     }
   };
@@ -72,6 +86,164 @@ function Clients() {
   const handleNewClient = useCallback(() => {
     history.push(`/admin/client-register`);
   }, [history]);
+
+  const getMuiTheme = createMuiTheme({
+    shadows: Array(25).fill("none"),
+    overrides: {
+      MUIDataTableSelectCell: {
+        expandDisabled: {
+          // Soft hide the button.
+          visibility: "hidden",
+        },
+        root: {
+          backgroundColor: "#e9e9e9",
+          padding: "5px",
+        },
+        body: {
+          border: "1px solid rgba(224, 224, 224, 1)"
+        }
+      },
+      MUIDataTableBodyRow: {
+        root: {
+          "&:nth-child(odd)": {
+            backgroundColor: "#f6f8fa",
+          },
+        },
+      },
+      MUIDataTableBodyCell: {
+        root: {
+          padding: "5px",
+        },
+      },
+
+      MuiTableSortLabel: {
+        root: {
+          color: "#ffffff",
+          "&:hover": {
+            color: "#ffffff",
+
+            "&& $icon": {
+              opacity: 1,
+              color: "#ffffff",
+            },
+          },
+          "&$active": {
+            color: "#ffffff",
+
+            // && instead of & is a workaround for https://github.com/cssinjs/jss/issues/1045
+            "&& $icon": {
+              opacity: 1,
+              color: "#ffffff",
+            },
+          },
+        },
+      },
+      MUIDataTableHeadCell: {
+
+      },
+
+    },
+  })
+
+
+  const options = {
+    elevation: 0,
+    filter: true,
+    filterType: "dropdown",
+    pagination: true,
+    rowsPerPage: 20,
+    download: true,
+    print: true,
+    sort: true,
+    search: true,
+    viewColumns: false,
+    selectableRows: "none",
+    textLabels: {
+      body: {
+        noMatch: "Nenhum registro encontrado",
+      },
+    },
+    sortOrder: {
+      name: "id",
+      direction: "asc",
+    },
+  }
+  const dataCols = [
+    {
+      label: "ID",
+      name: "id",
+      options: {
+        filter: false,
+        customBodyRender: (value) => <Link color="link" to={`/admin/client/${value}`}>{value}</Link>,
+      },
+    },
+    {
+      label: "Nome",
+      name: "name",
+      options: {
+        filter: true,
+      },
+    },
+    {
+      label: "CPF/CNPJ",
+      name: "document",
+      options: {
+        filter: true,
+        sort: false
+      },
+    },
+    {
+      label: "Subseller",
+      name: "subseller",
+      options: {
+        filter: true,
+        sort: false
+      },
+    },
+    {
+      label: "Status",
+      name: "status",
+      options: {
+        filter: true,
+        customBodyRender: (value) => {
+          return (<>
+            <Badge
+              color={value === "Aprovado Transacionar"
+                ? "success"
+                : "Em Análise" || "Trativa de Cadastro" ? "warning" : "danger"
+              }
+              pill
+            >
+              {value}
+            </Badge>
+          </>);
+        },
+      },
+    },
+    {
+      label: "Ações",
+      name: "id",
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRender: (value, index) => {
+          return (<>
+            <Button
+              size="sm"
+              color="info"
+              onClick={(e) => {
+                handleCallback(value, index);
+              }}
+
+            >
+              Atualizar Situação
+            </Button>
+          </>);
+        }
+      },
+    },
+
+  ];
 
   return (
     <>
@@ -91,145 +263,15 @@ function Clients() {
                 </div>
               </CardHeader>
               <CardBody>
-                <div className="status d-flex ">
-                  <a
-                    className={`order-status order-status-paid`}
-                    href="#mon"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleFilter(1);
-                    }}
-                  >
-                    <strong>Clientes Ativos</strong>
-                  </a>
-                  <a
-                    className={`order-status order-status-waiting_payment`}
-                    href="#anc"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleFilter(2);
-                    }}
-                  >
-                    <strong>Clientes Aguardando Liberação</strong>
-                  </a>
-                  <a
-                    className={`order-status order-status-cancelled`}
-                    href="#mon"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleFilter(3);
-                    }}
-                  >
-                    <strong>Clientes Cancelados</strong>
-                  </a>
-                </div>
+                <MuiThemeProvider theme={getMuiTheme}>
+                  <MUIDataTable
+                    title={""}
+                    data={clients}
+                    columns={dataCols}
+                    options={options}
+                  />
+                </MuiThemeProvider>
               </CardBody>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Empresa</th>
-                    <th scope="col">Plano</th>
-                    <th scope="col">CNPJ/CPF</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {clients.map((client, index) => (
-                    <tr key={client.id}>
-                      <td>
-                        <span className="mb-0 text-sm">{client.id}</span>
-                      </td>
-                      <th scope="row">
-                        <span className="mb-0 text-sm">{client.name}</span>
-                      </th>
-                      <td>{client.document}</td>
-                      <td>{client.plan ? client.plan.name : "Sem Plano"}</td>
-
-                      <td>
-                        <Badge color="" className="badge-dot mr-4">
-                          <i
-                            className={
-                              client.subseller.enabled === "S"
-                                ? "bg-success"
-                                : "bg-warning"
-                            }
-                          />
-                          {client.subseller.status}
-                        </Badge>
-                      </td>
-
-                      <td className="text-right">
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            className="btn-icon-only text-light"
-                            role="button"
-                            size="sm"
-                            color=""
-                          >
-                            <i className="fas fa-ellipsis-v" />
-                          </DropdownToggle>
-                          <DropdownMenu className="dropdown-menu-arrow" right>
-                            <DropdownItem onClick={() => handleProfile(client)}>
-                              Ver perfil
-                            </DropdownItem>
-                            <DropdownItem
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleCallback(
-                                  client.document,
-                                  client.type,
-                                  index
-                                );
-                              }}
-                            >
-                              Atualizar Situação
-                            </DropdownItem>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-              <CardFooter className="py-4">
-                <nav aria-label="...">
-                  <Pagination
-                    className="pagination justify-content-end mb-0"
-                    listClassName="justify-content-end mb-0"
-                  >
-                    <PaginationItem className="disabled">
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                        tabIndex="-1"
-                      >
-                        <i className="fas fa-angle-left" />
-                        <span className="sr-only">Previous</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem className="active">
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        <i className="fas fa-angle-right" />
-                        <span className="sr-only">Next</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                  </Pagination>
-                </nav>
-              </CardFooter>
             </Card>
           </div>
         </Row>

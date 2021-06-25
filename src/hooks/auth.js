@@ -24,11 +24,11 @@ function AuthProvider({ children }) {
 
   });
 
-  const isAuth = useCallback(() => {    
-    if(data?.user && data?.token){
-      let dateNow =  new Date()
-      
-        return (jwtDecode(data.token).exp < (dateNow.getTime() - jwtDecode(data.token).iat))       
+  const isAuth = useCallback(() => {
+    if (data?.user && data?.token) {
+      let dateNow = new Date()
+
+      return (jwtDecode(data.token).exp < (dateNow.getTime() - jwtDecode(data.token).iat))
     }
     return false
   },
@@ -42,15 +42,15 @@ function AuthProvider({ children }) {
     let date = moment()
     api.post('/session/login', data)
       .then(async (response) => {
-        const { token, user } = response.data;
+        const { token, adminUser } = response.data;
         localStorage.setItem('@MonetizDB:token', token);
-        localStorage.setItem('@MonetizDB:user', await JSON.stringify(user));
+        localStorage.setItem('@MonetizDB:user', await JSON.stringify(adminUser));
         localStorage.setItem('@MonetizDB:expire', date)
         api.defaults.headers.authorization = `Bearer ${token}`;
-       api.defaults.headers.contentType ="application/json";
-       api.defaults.headers.accept="application/json;"
-        setData({ token, user });
-        
+        api.defaults.headers.contentType = "application/json";
+        api.defaults.headers.accept = "application/json;"
+        setData({ token, user: adminUser });
+
         history.push('/');
       }).catch((err) => {
         let data = err.response.data

@@ -1,20 +1,3 @@
-/*!
-
-=========================================================
-* Argon Dashboard React - v1.1.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-dashboard-react
-* Copyright 2019 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import Index from "views/Index.js";
 import Clients from "views/clients/Clients";
 import ClientProfile from "views/clients/ClientProfile";
@@ -22,7 +5,6 @@ import ClientRegister from "views/clients/ClientRegister";
 import Plans from "views/plans/Plans";
 import PlanRegister from "views/plans/PlanRegister";
 import PlanSettings from "views/plans/PlanSettings";
-// import PlanMonetizPaySettings from "views/plans/PlanMonetizPaySettings";
 import Chargebacks from "views/chargebacks/Chargebacks";
 import ChargebackSettings from "views/chargebacks/ChargebackSettings";
 import Users from "views/users/Users";
@@ -34,7 +16,8 @@ import Register from "views/users/Register"
 import ResetPassword from "views/users/ResetPassword"
 import RePassword from "views/users/RePassword"
 import Statement from "views/statements/Statement"
- 
+import Orders from "views/orders/Orders";
+
 var routes = [
   {
     path: "/index",
@@ -51,10 +34,18 @@ var routes = [
     layout: "/admin",
   },
   {
-    path: "/client-profile",
+    path: "/client/:id",
     component: ClientProfile,
     layout: "/admin"
   },
+  {
+    path: "/orders",
+    name: "Pedidos",
+    icon: "ni ni-tv-2 text-primary",
+    component: Orders,
+    layout: "/admin",
+  },
+
   {
     path: "/client-register",
     component: ClientRegister,
@@ -106,7 +97,7 @@ var routes = [
     component: PlanSettings,
     layout: "/admin"
   },
-  
+
   {
     path: "/clients-chargeback",
     name: "Chargebacks",

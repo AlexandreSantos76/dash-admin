@@ -18,6 +18,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { set } from "date-fns";
 
 const schemaPersonData = Yup.object().shape({
   legalName: Yup.string().required("Nome é um campo obrigatório.").min(8),
@@ -34,22 +35,21 @@ const schemaPersonData = Yup.object().shape({
     }
   }),
   mobile: Yup.string().min(11, "Digite no formato (99)99999-9999").required("Telefone é um campo obrigatório."),
-  postcode: Yup.string().min(8, "Digite no formato 55555555 ou 55555-555")
+  zipCode: Yup.string().min(8, "Digite no formato 55555555 ou 55555-555")
     .required("CEP é um campo obrigatório."),
-  address: Yup.string().required("Rua é um campo obrigatório."),
+  street: Yup.string().required("Rua é um campo obrigatório."),
   number: Yup.string().required("Número é um campo obrigatório."),
   neighborhood: Yup.string().required("Bairro é um campo obrigatório."),
   agency: Yup.string().matches(/^[0-9]*$/, "Digite somente números").required("Agência é um campo obrigatório."),
-  account: Yup.string().matches(/^[0-9]*$/, "Digite somente números").required("Conta é um campo obrigatório."),
+  accountNumber: Yup.string().matches(/^[0-9]*$/, "Digite somente números").required("Conta é um campo obrigatório."),
   accountDigit: Yup.string().matches(/^[0-9]*$/, "Digite somente números").required("Dígito da conta é um campo obrigatório.").max(1, "Digito inválido")
 });
 function ClientRegister() {
-  const {userRegister} = useUsers();
+  const { userRegister } = useUsers();
   const { getPlans } = usePlans();
   const { register, handleSubmit, errors } = useForm({ resolver: yupResolver(schemaPersonData) });
-  const [postcode, setPostcode] = useState('')
-  const [city, setCity] = useState('')
-  const [state, setState] = useState('')
+  const [zipCode, setPostcode] = useState('')
+  const [viaCep, setViaCep] = useState({ cep: "", state: "", city: "", neighborhood: "", street: "" })
   const [isCpf, setIsCpf] = useState(false);
   const [plans, setPlans] = useState([]);
 
@@ -65,49 +65,47 @@ function ClientRegister() {
   }, [getPlans]);
 
   const onSubmit = async (data, e) => {
-    let { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, planId, address, number, neighborhood, city, state, postcode, complement, codeBank, agency, account, accountType, accountDigit } = data
+    let { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, planId, street, number, neighborhood, city, state, zipCode, complement, bankCode, agency, accountNumber, accountType, accountDigit } = data
     let userData = { legalName, tradeName, document, stateFiscalDocument, phone, mobile, email, type: isCpf ? "pf" : "pj", planId }
-    let addresses = { name: "Bussines Address", address, number, neighborhood, city, state, postcode, complement }
-    let bankAccounts = {
-      type_accounts: "unique",
-      unique_account: { codeBank, agency, account, accountType, accountDigit }
+    let address = { name: "Bussines Address", street, number, neighborhood, city, state, zipCode, complement }
+    let bankAccount = {
+      bankCode, agency, accountNumber, accountType, accountDigit
     }
     userData.mobile = userData.mobile.replace(/\D/g, "")
     userData.document = userData.document.replace(/\D/g, "")
     userData.stateFiscalDocument = userData.stateFiscalDocument.replace(/\D/g, "")
     userData.phone = userData.phone.replace(/\D/g, "")
-    addresses.postcode = addresses.postcode.replace(/\D/g, "")
+    address.zipCode = address.zipCode.replace(/\D/g, "")
     let dataSubmit = {
       user: userData,
       mailingAddressEquals: "S",
-      addresses: [addresses],
-      bankAccounts: bankAccounts,
+      address: address,
+      bankAccount: bankAccount,
       accepted_contract: "S",
       liability_chargeback: "S",
       marketplace_store: "N",
       payment_plan: 3
     }
-    
+
     let res = await userRegister(dataSubmit)
-    if(res){
+    if (res) {
       e.target.reset();
     }
 
   }
   useEffect(() => {
-    let str = postcode.replace(/[^\d]+/g, '')
+    let str = zipCode.replace(/[^\d]+/g, '')
     if (str.length >= 8) {
-      fetch(`https://brasilapi.com.br/api/cep/v1/${postcode}`)
+      fetch(`https://brasilapi.com.br/api/cep/v1/${zipCode}`)
         .then(async response => {
           let rs = await response.json();
           if (response.ok) {
-            setCity(rs.city);
-            setState(rs.state);
+            setViaCep(rs)
           }
         })
     }
-  }, [postcode])
-
+  }, [zipCode])
+  console.log(errors);
   return (
     <>
       <UserHeader />
@@ -182,7 +180,7 @@ function ClientRegister() {
                         <FormGroup>
                           <Label className="form-control-Label" for="input-mobile">
                             Celular
-                                </Label>
+                          </Label>
                           <Input
 
                             id="input-mobile"
@@ -201,9 +199,8 @@ function ClientRegister() {
                         <FormGroup>
                           <Label className="form-control-Label" for="input-phone">
                             Telefone Comercial
-                                </Label>
+                          </Label>
                           <Input
-
                             id="input-phone"
                             name="phone"
                             onChange={e => {
@@ -224,7 +221,6 @@ function ClientRegister() {
                               <FormGroup>
                                 <Label className="form-control-Label" for="input-cpf">CPF</Label>
                                 <Input
-
                                   id="input-cpf"
                                   name="document"
                                   type="text"
@@ -296,7 +292,7 @@ function ClientRegister() {
                                   for="input-cnpj"
                                 >
                                   CNPJ
-                              </Label>
+                                </Label>
                                 <Input
 
                                   name="document"
@@ -318,7 +314,7 @@ function ClientRegister() {
                                   for="input-state-fiscal"
                                 >
                                   Inscrição estadual
-                              </Label>
+                                </Label>
                                 <Input
                                   id="input-state-fiscal"
                                   name="stateFiscalDocument"
@@ -362,20 +358,20 @@ function ClientRegister() {
                         <FormGroup>
                           <Label
                             className="form-control-Label"
-                            for="input-postcode"
+                            for="input-zipCode"
                           >
                             CEP
                           </Label>
                           <Input
-                            id="input-postcode"
-                            name="postcode"
+                            id="input-zipCode"
+                            name="zipCode"
                             onChange={e => {
                               const { value } = e.target
                               setPostcode(value)
                               e.target.value = cepMask(value)
                             }}
                             type="text"
-                            invalid={errors.postcode ? true : false}
+                            invalid={errors.zipCode ? true : false}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -389,10 +385,11 @@ function ClientRegister() {
                             Endereço
                           </Label>
                           <Input
-                            invalid={errors.address ? true : false}
-                            name="address"
+                            invalid={errors.street ? true : false}
+                            name="street"
                             id="input-address"
                             type="text"
+                            defaultValue={viaCep.street}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -429,6 +426,7 @@ function ClientRegister() {
                             name="neighborhood"
                             id="input-neighborhood"
                             type="text"
+                            defaultValue={viaCep.neighborhood}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -465,7 +463,7 @@ function ClientRegister() {
                             name="city"
                             id="input-city"
                             type="text"
-                            defaultValue={city}
+                            defaultValue={viaCep.city}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -483,7 +481,7 @@ function ClientRegister() {
                             name="state"
                             id="input-state"
                             type="text"
-                            defaultValue={state}
+                            defaultValue={viaCep.state}
                             innerRef={register({ required: true })}
                           />
                         </FormGroup>
@@ -501,13 +499,13 @@ function ClientRegister() {
                           <br />
                           Deve conter somente digitos numéricos; Para contas com domicílio na Caixa Econômica Federal, o preenchimento deve seguir o seguinte modelo:<br />
                           <br />
-                              São 3 dígitos para o tipo de conta, 8 dígitos para a conta, os tipos de conta são os seguintes:<br />
-                              001 – Conta Corrente de Pessoa Física;<br />
-                              003 – Conta Corrente de Pessoa Jurídica;<br />
-                              013 – Poupança de Pessoa Física;<br />
-                              022 – Poupança de Pessoa Jurídica.<br />
+                          São 3 dígitos para o tipo de conta, 8 dígitos para a conta, os tipos de conta são os seguintes:<br />
+                          001 – Conta Corrente de Pessoa Física;<br />
+                          003 – Conta Corrente de Pessoa Jurídica;<br />
+                          013 – Poupança de Pessoa Física;<br />
+                          022 – Poupança de Pessoa Jurídica.<br />
                           <br />
-                              Exemplo: no campo de conta, será necessário colocar o tipo de conta (sem os zeros à esquerda) e o número da conta: 100000123.<br />
+                          Exemplo: no campo de conta, será necessário colocar o tipo de conta (sem os zeros à esquerda) e o número da conta: 100000123.<br />
                           <br />
                           <FontAwesomeIcon icon={faInfoCircle} color="info" /> <strong>Regras Dígito da Conta</strong><br />
                           <br />
@@ -524,11 +522,11 @@ function ClientRegister() {
                             className="form-control-Label"
                           >
                             Código do banco
-                                  </Label>
+                          </Label>
                           <Input
 
                             placeholder="Banco"
-                            name="codeBank"
+                            name="bankCode"
                             type="select"
                             innerRef={register({ required: true })}
                           >
@@ -557,8 +555,8 @@ function ClientRegister() {
                             Número da conta
                           </Label>
                           <Input
-                            invalid={errors.account ? true : false}
-                            name="account"
+                            invalid={errors.accountNumber ? true : false}
+                            name="accountNumber"
                             type="text"
                             innerRef={register({ required: true })}
                           />
@@ -586,7 +584,7 @@ function ClientRegister() {
                             className="form-control-Label"
                           >
                             Tipo da conta
-                                  </Label>
+                          </Label>
                           <Input
                             name="accountType"
                             type="select"

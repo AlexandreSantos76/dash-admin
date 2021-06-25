@@ -11,7 +11,7 @@ export default function RouteWrapper({
 }) {
 
   const auth = useAuth();
-  
+
   const signed = auth.isAuth();
   //const signed = true;
 
