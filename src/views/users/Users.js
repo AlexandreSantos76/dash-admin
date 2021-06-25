@@ -138,8 +138,6 @@ function Users() {
                 setDeleteGroup(false)
 
             }).catch((err) => {
-
-
             });
     }
     return (
