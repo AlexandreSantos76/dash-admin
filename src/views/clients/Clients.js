@@ -48,9 +48,9 @@ function Clients() {
           id: user.id,
           name: user.legalName,
           document: user.document,
-          subseller: user.subseller.subsellerId,
+          subseller: user?.subseller?.subsellerId,
           plan: user.plan.name,
-          status: user.subseller.status
+          status: user?.subseller?.status
         }
         users.push(newUser)
       }
