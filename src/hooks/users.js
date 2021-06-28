@@ -42,6 +42,7 @@ function UsersProvider({ children }) {
             let arrayKey = key.split(".")
             let label = typesGetnet[arrayKey[0]]
             toast.error(`Campo ${label} inválido`, { autoClose: false })
+            toast.error(`Campo Getnet:  ${key}`, { autoClose: false })
           })
         }
         if (data.errors) {
