@@ -40,6 +40,7 @@ function ClientProfile() {
   const [plans, setPlans] = useState([]);
   const [getnetPlans, setGetnetPlans] = useState([])
   const [getnetStatus, setGetnetStatus] = useState("")
+  const [clientStatus, setClientStatus] = useState("")
   const gateway = useGateway();
   const { id } = useParams();
   useEffect(() => {
@@ -55,6 +56,7 @@ function ClientProfile() {
       setBanks(user.bankAccounts[0])
       setPlans(responsePlans);
       setGetnetStatus(user.subseller.status)
+      setClientStatus(user.status)
       user.type === "pf" ? setIsCpf(true) : setIsCpf(false)
     }
     loadingData();
@@ -121,8 +123,8 @@ function ClientProfile() {
                                 name="status"
                                 id="input-status"
                                 type="select"
-                                value={client.status}
-                                onChange={e => { updateStatus(client.id, { status: e.target.value }) }}
+                                value={clientStatus}
+                                onChange={e => { updateStatus(client.id, { status: e.target.value }); setClientStatus(e.target.value) }}
                               >
                                 <option value="active" >Ativo</option>
                                 <option value="pending">Pendente</option>
@@ -150,7 +152,6 @@ function ClientProfile() {
                                 name="gatwayPlan"
                                 id="input-name"
                                 type="select"
-                                defaultValue={client.legalName}
                               >
                                 {getnetPlans.map((plan, key) =>
                                   <option key={key} value={plan.paymentplan_id}>{plan.name}</option>
